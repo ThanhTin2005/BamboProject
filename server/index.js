@@ -6,17 +6,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => res.send('Bambo Server is running!'));
+// Import controllers (Sẽ tạo ở bước 2)
+const authController = require('./controllers/authController');
 
+// --- ROUTES ---
+
+// Route test server
+app.get('/', (req, res) => {
+    res.send('Bambo Server is running! 🎍');
+});
+
+// Auth Routes (Ngày 3 & Ngày 4)
+app.post('/api/register', authController.register);
+app.post('/api/login', authController.login); // http://localhost:3000/api/login
+
+// --- START SERVER ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server chạy tại http://localhost:${PORT}`));
-
-const db = require('./db');
-app.get('/test-db', async (req, res) => {
-    try {
-        const [rows] = await db.query('SELECT 1 + 1 AS result');
-        res.json({ message: "Kết nối DB ngon lành!", data: rows });
-    } catch (err) {
-        res.status(500).send("Lỗi kết nối DB: " + err.message);
-    }
+app.listen(PORT, () => {
+    console.log(`🚀 Server đang chạy tại: http://localhost:${PORT}`);
 });
