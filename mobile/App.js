@@ -14,7 +14,7 @@ export default function App() {
     <NavigationContainer>
       {/* initialRouteName="Login" nghĩa là mở App ra sẽ thấy màn Login đầu tiên */}
       <Stack.Navigator 
-        initialRouteName="Home"
+        initialRouteName="Login"
         screenOptions={{ headerShown: false }} // Ẩn cái thanh tiêu đề mặc định của hệ thống cho đẹp
       >
         <Stack.Screen name="Login" component={LoginScreen} />
