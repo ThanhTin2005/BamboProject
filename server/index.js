@@ -4,6 +4,8 @@ require('dotenv').config();
 
 // Import các bảng chỉ dẫn (Routes)
 const authRoutes = require('./routes/authRoutes');
+const goalRoutes = require('./routes/goalRoutes');
+
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
     res.send('Bambo Server is ready! 🎍');
 });
+
+app.use('/api/goals', goalRoutes);
 
 // --- START SERVER ---
 const PORT = process.env.PORT || 3000;
