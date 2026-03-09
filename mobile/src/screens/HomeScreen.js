@@ -6,13 +6,14 @@ import {
   FlatList, 
   SafeAreaView, 
   ActivityIndicator,
-  RefreshControl // Thêm cái này để vuốt xuống tải lại trang
+  RefreshControl, // Thêm cái này để vuốt xuống tải lại trang
+  TouchableOpacity
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GoalCard from '../components/GoalCard';
 
-export default function HomeScreen() {
+export default function HomeScreen({navigation}) {
   const [goals, setGoals] = useState([]); // 1. Khởi tạo mảng rỗng
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,9 +38,23 @@ export default function HomeScreen() {
   };
 
   // 4. Tự động chạy khi vừa mở App
+  // useEffect(() => {
+  //   fetchGoals();
+  // }, []);//Mảng phụ thuộc là một mảng rỗng thì hàm useEffect sẽ chỉ thực hiện một lần 
   useEffect(() => {
-    fetchGoals();
-  }, []);//Mảng phụ thuộc là một mảng rỗng thì hàm useEffect sẽ chỉ thực hiện một lần 
+  // 1. Gọi lấy dữ liệu lần đầu tiên khi App vừa load
+  fetchGoals();
+
+  // 2. Thiết lập "thám tử" lắng nghe sự kiện 'focus'
+  // 'focus' là sự kiện xảy ra mỗi khi người dùng nhìn thấy màn hình này
+  const unsubscribe = navigation.addListener('focus', () => {
+    console.log("Màn hình Home đã được focus - Đang làm mới dữ liệu...");
+    fetchGoals(); 
+  });
+
+  // 3. Quan trọng: Dọn dẹp thám tử khi không dùng nữa để App không bị tốn RAM
+  return unsubscribe;
+}, [navigation]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -74,7 +89,16 @@ export default function HomeScreen() {
             <Text style={styles.emptyText}>Chưa có "mầm tre" nào trong DB. Hãy dùng Thunder Client thêm thử 1 cái!</Text>
           }
         />
+        
+        
       )}
+        <TouchableOpacity 
+          style={styles.fab} 
+          onPress={() => navigation.navigate('NewGoal')}
+        >
+          <Text style={styles.fabText}>+</Text>
+        </TouchableOpacity>
+      
     </SafeAreaView>
   );
 }
@@ -85,5 +109,22 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 28, fontWeight: 'bold', color: '#2d5a27' },
   subGreeting: { fontSize: 16, color: '#666', marginTop: 5 },
   listContent: { paddingHorizontal: 20, paddingBottom: 100 },
-  emptyText: { textAlign: 'center', marginTop: 50, color: '#999', fontStyle: 'italic' }
+  emptyText: { textAlign: 'center', marginTop: 50, color: '#999', fontStyle: 'italic' },
+  fab: {
+  position: 'absolute',
+  bottom: 30,
+  right: 30,
+  backgroundColor: '#2d5a27',
+  width: 65,
+  height: 65,
+  borderRadius: 33,
+  justifyContent: 'center',
+  alignItems: 'center',
+  elevation: 8,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 5,
+},
+fabText: { color: '#fff', fontSize: 35, fontWeight: '300' }
 });
