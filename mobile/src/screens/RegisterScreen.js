@@ -28,7 +28,7 @@ export default function RegisterScreen({ navigation }) {
 
   try {
     // THAY IP_CUA_ONG bằng địa chỉ IP thật của máy Mac
-    const response = await axios.post('http://192.168.0.102:3000/api/auth/register', {
+    const response = await axios.post('http://192.168.0.104:3000/api/auth/register', {
       //http://192.168.0.106:3000/api/auth/register
       username: username,
       password: password

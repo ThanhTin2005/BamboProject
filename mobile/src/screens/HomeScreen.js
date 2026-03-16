@@ -19,12 +19,12 @@ export default function HomeScreen({navigation}) {
   const [refreshing, setRefreshing] = useState(false);
 
   // 2. Hàm gọi API "thần thánh"
-  const fetchGoals = async () => {
+  const fetchGoals = async () => {//fetch = get : lấy dữ liệu
     try {
       const token = await AsyncStorage.getItem('userToken');
       
       // Thay đúng IP máy tính của ông vào đây
-      const response = await axios.get('http://192.168.0.102:3000/api/goals', {
+      const response = await axios.get('http://192.168.0.104:3000/api/goals', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -79,6 +79,8 @@ export default function HomeScreen({navigation}) {
               title={item.title} 
               description={item.description} 
               progress={0} // Day 22 mình sẽ tính toán % sau
+              coverImage={item.cover_image_url || 'leaf'} // phải dùng coverImage chứ k dùng iconName vì thẻ GoalCard được viết trong file GoalCard.js sử dụng thuộc tính coverImage(day14) chứ k còn dùng thuộc tính iconName(ngày 13) nữa
+              color={item.color || '#2d5a27'} // Dùng màu sắc từ DB nếu có, nếu không thì mặc định
             />
           )}
           contentContainerStyle={styles.listContent}

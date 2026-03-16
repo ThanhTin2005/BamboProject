@@ -11,6 +11,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // --- SỬ DỤNG ROUTES ---
 // Tất cả các route trong authRoutes sẽ bắt đầu bằng tiền tố /api/auth
