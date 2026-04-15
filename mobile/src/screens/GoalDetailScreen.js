@@ -6,12 +6,13 @@ import {
   FlatList, 
   Image, 
   SafeAreaView, 
-  ActivityIndicator 
+  ActivityIndicator,
+  TouchableOpacity 
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const GoalDetailScreen = ({ route }) => {
+const GoalDetailScreen = ({ route,navigation }) => {
   // Lấy ID và Tên mục tiêu từ HomeScreen truyền sang
   const { goalId, goalName } = route.params; 
   
@@ -39,9 +40,20 @@ const GoalDetailScreen = ({ route }) => {
   };
 
   // 2. Chạy hàm lấy dữ liệu ngay khi vừa mở màn hình
+  // useEffect(() => {
+  //   fetchLogs();
+  // }, [goalId]);
   useEffect(() => {
-    fetchLogs();
-  }, [goalId]);
+      // 1. Gọi lần đầu khi mở trang
+      fetchLogs();
+
+      // 2. Lắng nghe sự kiện 'focus' - mỗi khi quay lại màn hình này là tự load lại
+      const unsubscribe = navigation.addListener('focus', () => {//navigation.addListener('focus', callback) sẽ thiết lập một "thám tử" để lắng nghe sự kiện 'focus' trên
+        fetchLogs(); 
+      });
+
+      return unsubscribe;// Dọn dẹp thám tử khi không dùng nữa
+  }, [navigation, goalId]); // Thêm navigation và goalId vào mảng phụ thuộc
 
   // 3. Hàm vẽ từng cái "mầm tre" lên Timeline
   const renderLogItem = ({ item, index }) => {
@@ -103,6 +115,12 @@ const GoalDetailScreen = ({ route }) => {
           }
         />
       )}
+      <TouchableOpacity 
+        style={styles.fabCheckIn}
+        onPress={() => navigation.navigate('CreateLog', { goalId: goalId })}
+      >
+        <Text style={styles.fabText}>✍️ Check-in Hôm nay</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -126,6 +144,26 @@ const styles = StyleSheet.create({
   logCaption: { fontSize: 16, color: '#333', lineHeight: 22 },
   logMood: { fontSize: 12, color: '#2d5a27', marginTop: 8, fontStyle: 'italic' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#999', fontStyle: 'italic', paddingHorizontal: 20 },
+  fabCheckIn: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    left: 20, // Kéo dài ra 2 bên
+    backgroundColor: '#2d5a27',
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  fabText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   
   // Dành cho AI sau này
   aiBadge: {
