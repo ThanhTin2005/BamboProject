@@ -5,7 +5,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'; 
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import MyInput from '../components/MyInput';
+import MyInput from '../components/Input';
 import * as ImagePicker from 'expo-image-picker';
 
 
@@ -56,7 +56,7 @@ export default function NewGoalScreen({ navigation }) {
 
     try {
       const token = await AsyncStorage.getItem('userToken');
-      await axios.post('http://192.168.0.104:3000/api/goals', formData, {
+      await axios.post('http://192.168.0.106:3000/api/goals', formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Chỉ định gửi file
           'Authorization': `Bearer ${token}`

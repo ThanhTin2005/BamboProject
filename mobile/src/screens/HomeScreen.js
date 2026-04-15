@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import GoalCard from '../components/GoalCard';
+import GoalCard from '../components/goalCard';
 
 export default function HomeScreen({navigation}) {
   const [goals, setGoals] = useState([]); // 1. Khởi tạo mảng rỗng
@@ -24,7 +24,7 @@ export default function HomeScreen({navigation}) {
       const token = await AsyncStorage.getItem('userToken');
       
       // Thay đúng IP máy tính của ông vào đây
-      const response = await axios.get('http://192.168.0.104:3000/api/goals', {
+      const response = await axios.get('http://192.168.0.106:3000/api/goals', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -75,13 +75,27 @@ export default function HomeScreen({navigation}) {
           data={goals}
           keyExtractor={(item) => item.goal_id.toString()} // MySQL dùng goal_id
           renderItem={({ item }) => (
-            <GoalCard 
-              title={item.title} 
-              description={item.description} 
-              progress={0} // Day 22 mình sẽ tính toán % sau
-              coverImage={item.cover_image_url || 'leaf'} // phải dùng coverImage chứ k dùng iconName vì thẻ GoalCard được viết trong file GoalCard.js sử dụng thuộc tính coverImage(day14) chứ k còn dùng thuộc tính iconName(ngày 13) nữa
-              color={item.color || '#2d5a27'} // Dùng màu sắc từ DB nếu có, nếu không thì mặc định
-            />
+            // Bọc TouchableOpacity ra ngoài GoalCard để nhận sự kiện bấm
+            <TouchableOpacity 
+              activeOpacity={0.8} // Làm mờ nhẹ khi bấm cho có cảm giác tương tác
+              onPress={() => {
+                console.log("Đã bấm vào Goal ID:", item.goal_id); // Dòng này siêu quan trọng để test
+                // Kích hoạt chuyển trang sang GoalDetail
+                // Chú ý: Cột ID trong DB của ông tên là goal_id nên mình dùng item.goal_id nhé
+                navigation.navigate('GoalDetail', { 
+                  goalId: item.goal_id, 
+                  goalName: item.title 
+                });
+              }}
+            >
+              <GoalCard 
+                title={item.title} 
+                description={item.description} 
+                progress={0} 
+                coverImage={item.cover_image_url || 'leaf'} 
+                color={item.color || '#2d5a27'} 
+              />
+            </TouchableOpacity>
           )}
           contentContainerStyle={styles.listContent}
           refreshControl={

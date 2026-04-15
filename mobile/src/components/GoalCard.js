@@ -12,9 +12,9 @@ const GoalCard = ({ title, description, progress = 0, coverImage, color = '#2d5a
   // Nếu không phải link, ta coi như đó là tên Icon (Day 12)
   const isFullUrl = coverImage && coverImage.startsWith('http');
 
-  const BASE_URL = 'http://192.168.0.104:3000/uploads/'; // Thay bằng IP MacBook của ông
+  const BASE_URL = 'http://192.168.0.106:3000/uploads/'; // Thay bằng IP MacBook của ông
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.9}>
+    <View style={styles.card} >
       {/* Container Icon: Màu nền nhạt bằng cách thêm độ trong suốt 20 (Hex Alpha) */}
       <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}> 
         {isFullUrl ? (
@@ -35,7 +35,7 @@ const GoalCard = ({ title, description, progress = 0, coverImage, color = '#2d5a
       <View style={[styles.progressCircle, { borderColor: color }]}>
         <Text style={[styles.progressText, { color: color }]}>{progress}%</Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 

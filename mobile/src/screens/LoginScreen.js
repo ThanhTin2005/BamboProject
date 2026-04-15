@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 // Gọi "đệ" MyInput từ folder components sang làm việc
-import MyInput from '../components/MyInput';
+import MyInput from '../components/Input';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -25,7 +25,7 @@ const handleLogin = async () => {
     console.log('Đang đăng nhập...');
 
   try {
-    const response = await axios.post('http://192.168.0.104:3000/api/auth/login', {
+    const response = await axios.post('http://192.168.0.106:3000/api/auth/login', {
       username: username,
       password: password
     });

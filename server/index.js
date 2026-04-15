@@ -23,6 +23,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/goals', goalRoutes);
+// Thêm dòng này vào phần cấu hình routes
+app.use('/api/logs', require('./routes/logRoutes'));
 
 // --- START SERVER ---
 const PORT = process.env.PORT || 3000;

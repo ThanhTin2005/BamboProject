@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const uploadCloud = require('../config/cloudinaryConfig');
 
-// Cấu hình multer để xử lý upload file
+// Cấu hình multer để xử lý upload file (cái đoạn storage ở dưới này đã được thay thế bằng uploadCloud trong config/cloudinaryConfig.js rồi nên không cần dùng nữa)
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {

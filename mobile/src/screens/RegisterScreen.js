@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 // Tiếp tục dùng "đệ" MyInput để tiết kiệm thời gian code
-import MyInput from '../components/MyInput';
+import MyInput from '../components/Input';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -28,8 +28,8 @@ export default function RegisterScreen({ navigation }) {
 
   try {
     // THAY IP_CUA_ONG bằng địa chỉ IP thật của máy Mac
-    const response = await axios.post('http://192.168.0.104:3000/api/auth/register', {
-      //http://192.168.0.106:3000/api/auth/register
+    const response = await axios.post('http://192.168.0.106:3000/api/auth/register', {
+      //http://192.168.0.104:3000/api/auth/register
       username: username,
       password: password
     });

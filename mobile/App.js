@@ -7,6 +7,9 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import NewGoalScreen from './src/screens/NewGoalScreen';
+import GoalDetailScreen from './src/screens/GoalDetailScreen';
+import CreateLogScreen from './src/screens/CreateLogScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -22,6 +25,9 @@ export default function App() {
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="NewGoal" component={NewGoalScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="GoalDetail" component={GoalDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateLog" component={CreateLogScreen} options={{ headerShown: false }} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
