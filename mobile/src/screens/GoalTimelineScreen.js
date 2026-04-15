@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomContainer from '../components/customContainer';
 
-const GoalDetailScreen = ({ route,navigation }) => {
+const GoalTimelineScreen = ({ route,navigation }) => {
   // Lấy ID và Tên mục tiêu từ HomeScreen truyền sang
   const { goalId, goalName } = route.params; 
   
@@ -61,6 +62,7 @@ const GoalDetailScreen = ({ route,navigation }) => {
     const formattedDate = new Date(item.created_at).toLocaleDateString('vi-VN');
 
     return (
+      <CustomContainer>
       <View style={styles.logContainer}>
         {/* Cột trái: Cột mốc thời gian */}
         <View style={styles.timelineLeft}>
@@ -90,11 +92,12 @@ const GoalDetailScreen = ({ route,navigation }) => {
           </View>
         </View>
       </View>
+      </CustomContainer>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <CustomContainer>
       <View style={styles.header}>
         <Text style={styles.goalTitle}>{goalName}</Text>
         <Text style={styles.subTitle}>Hành trình của mầm tre 🎍</Text>
@@ -121,7 +124,7 @@ const GoalDetailScreen = ({ route,navigation }) => {
       >
         <Text style={styles.fabText}>✍️ Check-in Hôm nay</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </CustomContainer>
   );
 };
 
@@ -178,4 +181,4 @@ const styles = StyleSheet.create({
   aiBadgeText: { fontSize: 10, fontWeight: 'bold', color: '#2d5a27' }
 });
 
-export default GoalDetailScreen;
+export default GoalTimelineScreen;

@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomContainer from '../components/customContainer';
 
 const CreateLogScreen = ({ route, navigation }) => {
   const { goalId, goalName } = route.params; 
@@ -70,8 +71,8 @@ const CreateLogScreen = ({ route, navigation }) => {
         Alert.alert("Thành công!", "Mầm tre đã lớn thêm một chút 🌱");
         
         // 2. CHỮA BỆNH VĂNG VỀ HOME: 
-        // Thay vì goBack(), ta điều hướng đích danh về trang GoalDetail cho an toàn
-        //navigation.navigate('GoalDetail', { goalId: goalId, goalName: goalName || "Hành trình" });
+        // Thay vì goBack(), ta điều hướng đích danh về trang GoalTimeline cho an toàn
+        //navigation.navigate('GoalTimeline', { goalId: goalId, goalName: goalName || "Hành trình" });
         // DÙNG LỆNH NÀY: Để đóng màn hình CreateLog và quay lại đúng màn hình Detail trước đó
         navigation.goBack();
       } else {
@@ -89,6 +90,7 @@ const CreateLogScreen = ({ route, navigation }) => {
 
   return (
     // 3. CHIÊU THỨC ẨN BÀN PHÍM: Bọc toàn bộ bằng TouchableWithoutFeedback
+    <CustomContainer>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
         <Text style={styles.headerText}>Đang check-in cho Mục tiêu số: {goalId}</Text>
@@ -137,6 +139,7 @@ const CreateLogScreen = ({ route, navigation }) => {
 
       </View>
     </TouchableWithoutFeedback>
+    </CustomContainer>
   );
 };
 

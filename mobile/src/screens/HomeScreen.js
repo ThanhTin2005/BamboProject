@@ -12,6 +12,7 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GoalCard from '../components/goalCard';
+import CustomContainer from '../components/customContainer';
 
 export default function HomeScreen({navigation}) {
   const [goals, setGoals] = useState([]); // 1. Khởi tạo mảng rỗng
@@ -62,7 +63,7 @@ export default function HomeScreen({navigation}) {
   };//Mỗi khi onRefresh được gọi thì biến refresh sẽ được cập nhật thành true và gọi đến hàm fetchGoals()
 
   return (
-    <SafeAreaView style={styles.container}>
+    <CustomContainer>
       <View style={styles.header}>
         <Text style={styles.greeting}>Hành trình Bambo 🎍</Text>
         <Text style={styles.subGreeting}>Dữ liệu thật từ Database của ông đây!</Text>
@@ -80,7 +81,7 @@ export default function HomeScreen({navigation}) {
               activeOpacity={0.8} // Làm mờ nhẹ khi bấm cho có cảm giác tương tác
               onPress={() => {
                 console.log("Đã bấm vào Goal ID:", item.goal_id); // Dòng này siêu quan trọng để test
-                // Kích hoạt chuyển trang sang GoalDetail
+                // Kích hoạt chuyển trang sang GoalTimeline
                 // Chú ý: Cột ID trong DB của ông tên là goal_id nên mình dùng item.goal_id nhé
                 navigation.navigate('GoalDetail', { 
                   goalId: item.goal_id, 
@@ -115,7 +116,7 @@ export default function HomeScreen({navigation}) {
           <Text style={styles.fabText}>+</Text>
         </TouchableOpacity>
       
-    </SafeAreaView>
+    </CustomContainer>
   );
 }
 

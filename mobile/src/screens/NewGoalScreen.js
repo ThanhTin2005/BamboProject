@@ -7,6 +7,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyInput from '../components/Input';
 import * as ImagePicker from 'expo-image-picker';
+import CustomContainer from '../components/customContainer';
 
 
 // Bộ Icon đã fix tên theo Ionicons 7 (bỏ md-/ios-)
@@ -97,7 +98,7 @@ export default function NewGoalScreen({ navigation }) {
 
   return (
   
-    <SafeAreaView style={styles.container}>
+    <CustomContainer>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -176,7 +177,7 @@ export default function NewGoalScreen({ navigation }) {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </CustomContainer>
   );
 }
 
