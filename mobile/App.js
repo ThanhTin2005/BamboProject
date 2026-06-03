@@ -13,6 +13,7 @@ import CreateLogScreen from './src/screens/CreateLogScreen';
 import GoalDetailTabs from './src/screens/GoalDetailTabs';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import EditGoalScreen from './src/screens/EditGoalScreen';
+import SocialFeedScreen from './src/screens/SocialFeedScreen';
 
 
 const Stack = createStackNavigator();
@@ -42,6 +43,7 @@ export default function App() {
         />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EditGoal" component={EditGoalScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="SocialFeed" component={SocialFeedScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
     </SafeAreaProvider>
