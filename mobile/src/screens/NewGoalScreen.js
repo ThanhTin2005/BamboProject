@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  View, Text, Image, StyleSheet, TouchableOpacity, SafeAreaView, Alert, ScrollView, KeyboardAvoidingView, Platform 
+  View, Text, Image, StyleSheet, TouchableOpacity, SafeAreaView, Alert, ScrollView, KeyboardAvoidingView, Platform, Switch
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; 
 import axios from 'axios';
@@ -21,6 +21,7 @@ export default function NewGoalScreen({ navigation }) {
   const [selectedColor, setSelectedColor] = useState('#2d5a27');
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
+  const [isPublic, setIsPublic] = useState(true);
 
   // Hàm mở thư viện ảnh
   const pickImage = async () => {
@@ -41,6 +42,7 @@ export default function NewGoalScreen({ navigation }) {
     formData.append('title', title);
     formData.append('description', description);
     formData.append('color', selectedColor);
+    formData.append('is_public', isPublic);
 
     if (image) {
       // Nếu có chọn ảnh thật
@@ -57,7 +59,7 @@ export default function NewGoalScreen({ navigation }) {
 
     try {
       const token = await AsyncStorage.getItem('userToken');
-      await axios.post('http://192.168.0.106:3000/api/goals', formData, {
+      await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Chỉ định gửi file
           'Authorization': `Bearer ${token}`
@@ -78,7 +80,7 @@ export default function NewGoalScreen({ navigation }) {
   //     setLoading(true);
   //     const token = await AsyncStorage.getItem('userToken');
       
-  //     await axios.post('http://192.168.57.129:3000/api/goals', 
+  //     await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', 
   //       {
   //         title: title,
   //         description: description,
@@ -168,6 +170,22 @@ export default function NewGoalScreen({ navigation }) {
             ))}
           </View>
 
+          {/* Công tắc Public/Private */}
+          <View style={styles.switchContainer}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchLabel}>Công khai mục tiêu</Text>
+              <Text style={styles.switchSubLabel}>
+                {isPublic ? "Mọi người có thể thấy tiến độ của bạn" : "Chỉ mình bạn xem được"}
+              </Text>
+            </View>
+            <Switch
+              value={isPublic}
+              onValueChange={(value) => setIsPublic(value)}
+              trackColor={{ false: "#E0EAE0", true: "#39FF14" }} // Màu khi tắt/bật
+              thumbColor={isPublic ? "#2d5a27" : "#f4f3f4"}
+            />
+          </View>
+
           <TouchableOpacity 
             style={[styles.btn, { backgroundColor: selectedColor }]} 
             onPress={handleCreateGoal}
@@ -215,7 +233,20 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     alignItems: 'center',
-  }
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 20,
+    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5
+  },
+  switchTextWrapper: { flex: 1 },
+  switchLabel: { fontSize: 16, fontWeight: 'bold', color: '#1a3317' },
+  switchSubLabel: { fontSize: 12, color: '#666', marginTop: 4, fontStyle: 'italic' }
 });
 
 // import React, { useState } from 'react';

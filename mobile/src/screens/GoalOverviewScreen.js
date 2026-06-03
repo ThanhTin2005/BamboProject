@@ -31,7 +31,7 @@ const GoalOverviewScreen = ({ route, navigation }) => {
       setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
       // Đảm bảo IP chuẩn của ông
-      const response = await axios.get(`http://192.168.0.106:3000/api/logs/${goalId}`, {
+      const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/logs/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

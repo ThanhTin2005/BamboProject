@@ -1,3 +1,5 @@
+//authController.js là nơi xử lý logic cho việc đăng ký và đăng nhập, bao gồm mã hoá mật khẩu và tạo token JWT
+//Còn userController là nơi xử lý các logic liên quan đến người dùng sau khi đã đăng nhập, như xem thông tin cá nhân, cập nhật hồ sơ, v.v. 
 //authController.js dùng để mã hoá mật khẩu trước khi lưu vào db và giải mã khi đăng nhập 
 const bcrypt = require('bcryptjs');//Đây là thư viện dùng để mã hoá mật khẩu trước khi được vào DB 
 const db = require('../db'); // File kết nối DB từ Ngày 1

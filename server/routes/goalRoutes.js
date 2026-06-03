@@ -17,7 +17,9 @@ const storage = multer.diskStorage({
 
 // Cả 2 route này đều cần phải qua "chốt bảo vệ" authenticateToken
 // Route này bây giờ sẽ tự động đẩy ảnh lên Cloudinary trước khi vào Controller
-router.post('/', authenticateToken, uploadCloud.single('image'), goalController.createGoal);
-router.get('/', authenticateToken, goalController.getGoals);
-
+router.post("/", authenticateToken, uploadCloud.single("image"), goalController.createGoal);
+router.get("/", authenticateToken, goalController.getGoals);
+router.put("/:goalId", authenticateToken, uploadCloud.single("image"), goalController.updateGoal);
+router.get("/:goalId", authenticateToken, goalController.getGoalById); // Thêm route lấy chi tiết Goal theo ID
+//hai cái get không cần uploadCloud.single() vì chỉ lấy dữ liệu thôi, không có upload ảnh nào cả
 module.exports = router;

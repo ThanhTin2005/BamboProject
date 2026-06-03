@@ -1,7 +1,8 @@
 import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 
-import { View } from 'react-native';
+import { View ,StyleSheet,TouchableOpacity} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import CustomContainer from '../components/customContainer'; // Căn phòng đặc biệt có khả năng tự động "né" các vùng bị che khu
 
 // Import 2 "căn phòng" vừa tạo
@@ -10,7 +11,10 @@ import GoalTimelineScreen from './GoalTimelineScreen'; // Tên mới của GoalD
 
 const Tab = createMaterialTopTabNavigator();
 
+import { useNavigation } from '@react-navigation/native';
+
 const GoalDetailTabs = ({ route }) => {
+  const navigation = useNavigation();
   // Lấy dữ liệu ID và Tên mục tiêu từ HomeScreen
   const { goalId, goalName } = route.params;
 
@@ -44,8 +48,31 @@ const GoalDetailTabs = ({ route }) => {
         initialParams={{ goalId: goalId, goalName: goalName }} 
       />
     </Tab.Navigator>
+
+    <TouchableOpacity 
+        style={styles.editButton}
+        onPress={() => navigation.navigate("EditGoal", { goalId: goalId })}
+      >
+        <Ionicons name="pencil" size={24} color="white" />
+      </TouchableOpacity>
     </CustomContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  editButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#2d5a27',
+    padding: 15,
+    borderRadius: 50,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+});
 
 export default GoalDetailTabs;
