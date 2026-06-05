@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Import 2 màn hình ông vừa code xong
+import SocialTabNavigator from './src/navigation/SocialTabNavigator'; // Ông nhớ check lại đúng đường dẫn file SocialTabNavigator của ông nhé
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -29,7 +30,7 @@ export default function App() {
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        {/*<Stack.Screen name="Home" component={HomeScreen} />*/}
         <Stack.Screen name="NewGoal" component={NewGoalScreen} options={{ headerShown: false }} />
         <Stack.Screen name="GoalTimeline" component={GoalTimelineScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CreateLog" component={CreateLogScreen} options={{ headerShown: false }} />
@@ -43,7 +44,7 @@ export default function App() {
         />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EditGoal" component={EditGoalScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="SocialFeed" component={SocialFeedScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="SocialTab" component={SocialTabNavigator} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
     </SafeAreaProvider>

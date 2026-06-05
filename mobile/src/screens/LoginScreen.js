@@ -42,7 +42,7 @@ const handleLogin = async () => {
       // 3. Nhảy vào màn hình chính (Ngày 7 mình sẽ làm màn Home)
       // navigation.navigate('Home'); 
       //navigation.replace('Home');//Không dùng navigate để tránh người dùng lỡ back lại màn hình đăng nhập  
-            navigation.replace('SocialFeed');//Không dùng navigate để tránh người dùng lỡ back lại màn hình đăng nhập  
+            navigation.replace('SocialTab');//Không dùng navigate để tránh người dùng lỡ back lại màn hình đăng nhập  
 
     }
   }  catch (error) {
