@@ -1,12 +1,6 @@
-# 🎋 Bambo - Social Networking & Task Management App
+# 🎋 Bambo - Mạng xã hội phát triển bản thân 
 
-<p align="center">
-  <img src="./assets/logo.png" alt="Bambo Logo" width="120" height="120" style="border-radius: 20px;"/>
-  <br>
-  <b>Một ứng dụng di động kết hợp không gian mạng xã hội trực quan và công cụ quản lý công việc hiệu quả.</b>
-  <br>
-  <sub>Xây dựng bởi Phạm Thành Tín</sub>
-</p>
+
 
 ---
 
@@ -15,14 +9,30 @@
 > **Mẹo:** Bạn hãy chụp ảnh màn hình, ghép vào khung mockup điện thoại (hoặc giữ nguyên tỉ lệ dọc) rồi lưu vào một thư mục như `docs/screenshots/` trong repo để chèn link vào đây nhé.
 
 ### 👥 Trải nghiệm Mạng xã hội (Social Features)
-![alt text](image.png)
-![alt text](image-1.png)
+<table>
+  <tr>
+    <td><img src="image.png" width="240" alt="Newsfeed"/></td>
+    <td><img src="image-1.png" width="240" alt="Detail"/></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Màn hình Newsfeed</em></td>
+    <td align="center"><em>Màn hình Chi tiết</em></td>
+  </tr>
+</table>
 
 ### 📋 Quản lý Công việc (Task Management)
-![alt text](image-4.png)
-![alt text](image-2.png)
-![alt text](image-3.png)
-
+<table>
+  <tr>
+    <td><img src="image-4.png" width="240" alt="Kanban"/></td>
+    <td><img src="image-2.png" width="240" alt="Task Detail"/></td>
+    <td><img src="image-3.png" width="240" alt="Analytics"/></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Bảng Kanban</em></td>
+    <td align="center"><em>Chi tiết Task</em></td>
+    <td align="center"><em>Thống kê</em></td>
+  </tr>
+</table>
 ---
 
 ## ✨ Tính năng nổi bật (Features)
