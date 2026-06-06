@@ -15,7 +15,7 @@ import CustomContainer from '../components/customContainer';
 
 const GoalTimelineScreen = ({ route,navigation }) => {
   // Lấy ID và Tên mục tiêu từ HomeScreen truyền sang
-  const { goalId, goalName } = route.params; 
+  const { goalId, goalName , isFriendView } = route.params || {}; // Thêm isFriendView để biết có phải đang xem timeline của bạn bè hay không
   
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,12 +118,14 @@ const GoalTimelineScreen = ({ route,navigation }) => {
           }
         />
       )}
-      <TouchableOpacity 
-        style={styles.fabCheckIn}
-        onPress={() => navigation.navigate('CreateLog', { goalId: goalId })}
-      >
-        <Text style={styles.fabText}>✍️ Check-in Hôm nay</Text>
-      </TouchableOpacity>
+      {!isFriendView && (
+        <TouchableOpacity
+          style={styles.fabCheckIn}
+          onPress={() => navigation.navigate('CreateLog', { goalId: goalId })}
+        >
+          <Text style={styles.fabText}>✍️ Check-in Hôm nay</Text>
+        </TouchableOpacity>
+      )}
     </CustomContainer>
   );
 };

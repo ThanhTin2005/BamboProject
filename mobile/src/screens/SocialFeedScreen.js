@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator,TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // hoặc fetch tùy dự án của ông
 
-export default function SocialFeedScreen() {
+export default function SocialFeedScreen({navigation}) {
   const [feedData, setFeedData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -46,6 +46,11 @@ export default function SocialFeedScreen() {
   const renderFeedItem = ({ item }) => (
     <View style={styles.card}>
       {/* 1. HEADER: Avatar + Tên + Thời gian */}
+      <TouchableOpacity 
+        style={styles.postHeader} 
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('FriendProfile', { friendId: item.user_id })} 
+      >
       <View style={styles.cardHeader}>
         <Image source={{ uri: item.creator_avatar || 'https://via.placeholder.com/150' }} style={styles.avatar} />
         <View>
@@ -53,6 +58,7 @@ export default function SocialFeedScreen() {
           <Text style={styles.timeText}>{new Date(item.log_created_at).toLocaleDateString()}</Text>
         </View>
       </View>
+      </TouchableOpacity>
 
       {/* 2. BODY: Ảnh log + Caption */}
       {item.log_image && (

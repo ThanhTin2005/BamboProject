@@ -40,10 +40,10 @@ exports.getLogsByGoal = async (req, res) => {
         // Query lấy log, sắp xếp cái nào mới nhất thì lên đầu (DESC)
         const query = `
             SELECT * FROM logs 
-            WHERE goal_id = ? AND user_id = ? 
+            WHERE goal_id = ? 
             ORDER BY created_at DESC
         `;
-        const [logs] = await db.query(query, [goal_id, user_id]);
+        const [logs] = await db.query(query, [goal_id]);
 
         res.status(200).json({
             message: "Lấy nhật ký thành công!",

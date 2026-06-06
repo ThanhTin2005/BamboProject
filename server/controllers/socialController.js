@@ -22,6 +22,7 @@ const getFeed = async (req, res) => {
     // CÂU LỆNH SQL LIÊN HOÀN 4 BẢNG CHUẨN THEO ĐỊNH HƯỚNG BẠN BÈ/FOLLOW
     const query = `
         SELECT 
+            u.user_id,
             l.log_id,
             l.caption,
             l.mood,
@@ -125,4 +126,40 @@ const getFriends = async (req, res) => {
   }
 };
 
-module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends };
+// [API 3] - LẤY THÔNG TIN PROFILE VÀ GOALS PUBLIC CỦA BẠN BÈ
+const getFriendProfile = async (req, res) => {
+  const friendId = req.params.friendId;
+
+  try {
+    // 1. Lấy thông tin cơ bản của bạn bè (Avatar, Tên)
+    const [userInfo] = await db.query(
+      'SELECT user_id, username, avatar_url FROM users WHERE user_id = ?', 
+      [friendId]
+    );
+    
+    if (userInfo.length === 0) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng." });
+    }
+
+    // 2. Lấy danh sách Mục tiêu (Goals) CHỈ CÔNG KHAI của người đó
+    // Giả định bảng goals của ông có cột is_public (1 là công khai, 0 là riêng tư)
+    const [publicGoals] = await db.query(`
+      SELECT goal_id, title, description, color, cover_image_url 
+      FROM goals 
+      WHERE user_id = ? AND is_public = 1
+      ORDER BY created_at DESC
+    `, [friendId]);
+
+    // 3. Đóng gói trả về Frontend
+    res.status(200).json({
+      profile: userInfo[0],
+      goals: publicGoals
+    });
+
+  } catch (error) {
+    console.error("Lỗi lấy profile bạn bè:", error);
+    res.status(500).json({ error: "Lỗi Server." });
+  }
+};
+
+module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile };

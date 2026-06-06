@@ -15,6 +15,7 @@ import GoalDetailTabs from './src/screens/GoalDetailTabs';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import EditGoalScreen from './src/screens/EditGoalScreen';
 import SocialFeedScreen from './src/screens/SocialFeedScreen';
+import FriendProfileScreen from './src/screens/FriendProfileScreen';
 
 
 const Stack = createStackNavigator();
@@ -45,6 +46,16 @@ export default function App() {
         <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EditGoal" component={EditGoalScreen} options={{ headerShown: false }} />
         <Stack.Screen name="SocialTab" component={SocialTabNavigator} options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="FriendProfile" 
+          component={HomeScreen} 
+          options={{ 
+            headerShown: true, // Để hiện nút Back quay lại cho dễ
+            title: 'Hồ sơ kỷ luật',
+            headerTintColor: '#1B5E20', // Màu xanh đậm Bambo cho nút Back
+            headerTitleStyle: { fontWeight: 'bold' },
+          }} 
+        />
       </Stack.Navigator>
     </NavigationContainer>
     </SafeAreaProvider>

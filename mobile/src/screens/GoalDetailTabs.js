@@ -1,3 +1,4 @@
+// GoalDetail là màn hình có 2 tab: Tổng quan và Hành trình.
 import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context'; 

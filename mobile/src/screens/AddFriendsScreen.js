@@ -8,7 +8,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons'; // Sử dụng icon của Expo
 import axios from 'axios';
 
-export default function AddFriendsScreen() {
+export default function AddFriendsScreen({ navigation }) {
   const [myCode, setMyCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [friendsList, setFriendsList] = useState([]);
@@ -115,14 +115,21 @@ export default function AddFriendsScreen() {
       <FlatList
         data={friendsList}
         keyExtractor={(item) => item.user_id.toString()}
+        // Sửa lại đoạn FlatList renderItem:
         renderItem={({ item }) => (
-          <View style={styles.friendRow}>
+          <TouchableOpacity 
+            style={styles.friendRow}
+            onPress={() => navigation.navigate('FriendProfile', { friendId: item.user_id })}
+          >
             <Image 
               source={{ uri: item.avatar_url || 'https://via.placeholder.com/150' }} 
               style={styles.avatar} 
             />
-            <Text style={styles.friendName}>{item.username}</Text>
-          </View>
+            <View>
+              <Text style={styles.friendName}>{item.username}</Text>
+              <Text style={styles.viewProfileLabel}>Xem hồ sơ</Text>
+            </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={
           <Text style={styles.emptyText}>Bạn chưa kết nối với ai. Hãy gửi mã mời ngay nhé!</Text>
