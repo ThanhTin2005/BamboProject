@@ -27,7 +27,7 @@ export default function EditGoalScreen({ route, navigation }) {
     const fetchGoalDetails = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ 
+const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
           headers: { Authorization: `Bearer ${token}` }
         });
         const goal = response.data;

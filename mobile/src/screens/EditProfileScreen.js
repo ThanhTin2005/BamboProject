@@ -18,7 +18,7 @@ const EditProfileScreen = ({ route, navigation }) => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      // NHỚ IP: 192.168.0.106
+      // NHỚ IP: 192.168.0.106 // Phams-MacBook-Air.local
       const response = await axios.put('http://Phams-MacBook-Air.local:3000/api/user/profile', 
         { name, slogan },
         { headers: { Authorization: `Bearer ${token}` } }
