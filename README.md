@@ -24,7 +24,7 @@
 <table>
   <tr>
     <td><img src="image-4.png" width="240" alt="Kanban"/></td>
-    <td><img src="image-2.png" width="240" alt="Task Detail"/></td>
+    <td><img src="image-5.png" width="240" alt="Task Detail"/></td>
     <td><img src="image-3.png" width="240" alt="Analytics"/></td>
   </tr>
   <tr>
