@@ -10,9 +10,9 @@
 
 <table>
   <tr>
-    <td align="center"><b>🎯 Quản lý Mục tiêu</b></td>
-    <td align="center"><b>🔥 Bức tranh Kỷ luật</b></td>
-    <td align="center"><b>🤜 Bảng tin Đồng đội</b></td>
+    <td align="center"><b>Profile</b></td>
+    <td align="center"><b>Goal Overview</b></td>
+    <td align="center"><b>Discover</b></td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/screenshots/profile.jpg" width="250" alt="Mục tiêu của tôi"/></td>
@@ -20,23 +20,23 @@
     <td align="center"><img src="./assets/screenshots/social-feed.jpg" width="250" alt="Bảng tin"/></td>
   </tr>
   <tr>
-    <td align="center">Quản lý các mục tiêu song song (Project II, ILeague...). Theo dõi tiến độ và chuỗi ngày liên tiếp (Streak).</td>
-    <td align="center">Trực quan hóa hành trình bằng Heatmap 30 ngày, thúc đẩy động lực gieo mầm mỗi ngày.</td>
-    <td align="center">Sân chơi riêng tư. Tương tác bằng cơ chế "Đấm tay" (Fist Bump), không đếm số lượng để triệt tiêu áp lực đồng trang lứa.</td>
+    <td align="center">Trang cá nhân của người dùng ,chứa thông tin các mục tiêu (Project II, ILeague...). </td>
+    <td align="center">Theo dõi thực hiện trong 30 ngày. Khi một thói quen tốt đã được thiết lập, người dùng sẽ cố gắng để duy trì thói quen đó . </td>
+    <td align="center">Màn hình khám phá các logs (nhật ký) của bạn bè , có thêm cơ chế thả cảm xúc 🤜 , để chia sẻ tinh thần nỗ lực . </td>
   </tr>
 </table>
 
 <table>
   <tr>
-    <td align="center"><b>🌱 Hành trình Mầm tre</b></td>
-    <td align="center"><b>🤝 Kết nối Đồng âm</b></td>
+    <td align="center"><b>Goal Timeline</b></td>
+    <td align="center"><b>Add Friends</b></td>
   </tr>
   <tr>
     <td align="center"><img src="./assets/screenshots/timeline.jpg" width="250" alt="Hành trình"/></td>
     <td align="center"><img src="./assets/screenshots/connections.jpg" width="250" alt="Kết nối"/></td>
   </tr>
   <tr>
-    <td align="center">Lãnh địa cá nhân lưu giữ nỗ lực cày cuốc. Nhận sự công nhận từ anh em qua cụm Avatar tương tác xếp đè (Zero-Numbers).</td>
-    <td align="center">Mở rộng mạng lưới kỷ luật qua hệ thống Mã mời (Invite Code) định danh, nhanh gọn và bảo mật.</td>
+    <td align="center">Theo dõi chi tiết các hoạt động theo từng ngày để hướng đến mục tiêu </td>
+    <td align="center">Kết bạn (phiên bản đơn giản) , dựa vào việc nhập code tương ứng với từng tài khoản người dùng .</td>
   </tr>
 </table>
