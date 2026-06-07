@@ -169,7 +169,7 @@ const HomeScreen = ({ route, navigation }) => {
               {!isFriendView && (
                 <>
                   <TouchableOpacity style={styles.btnEditCover} onPress={() => pickImage('cover')}>
-                    <Text style={styles.btnEditCoverText}>📷 Thay ảnh bìa</Text>
+                    <Text style={styles.btnEditCoverText}>📷</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity 
@@ -179,7 +179,7 @@ const HomeScreen = ({ route, navigation }) => {
                       currentSlogan: userProfile.slogan 
                     })}
                   >
-                    <Text style={styles.btnEditInfoText}>⚙️ Chỉnh sửa</Text>
+                    <Text style={styles.btnEditInfoText}>⚙️</Text>
                   </TouchableOpacity>
                 </>
               )}
