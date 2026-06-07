@@ -18,7 +18,9 @@ export default function AddFriendsScreen({ navigation }) {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // THAY ĐỔI: Sử dụng địa chỉ IP máy của ông nhé
+      //const response = await axios.get('http://172.31.43.77:3000/api/social/friends', {
       const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/social/friends', {
+
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -49,7 +51,9 @@ export default function AddFriendsScreen({ navigation }) {
     try {
       const token = await AsyncStorage.getItem('userToken');
       const response = await axios.post(
+        //'http://172.31.43.77:3000/api/social/add-by-code',
         'http://Phams-MacBook-Air.local:3000/api/social/add-by-code',
+
         { inviteCode: inputCode.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );

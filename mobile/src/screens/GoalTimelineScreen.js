@@ -27,6 +27,7 @@ const GoalTimelineScreen = ({ route,navigation }) => {
       
       // NHỚ THAY LẠI BẰNG ĐỊA CHỈ IP WIFI CỦA ÔNG
       const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/logs/${goalId}`, {
+      //const response = await axios.get(`http://172.31.43.77:3000/api/logs/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -89,6 +90,30 @@ const GoalTimelineScreen = ({ route,navigation }) => {
               <Text style={styles.logCaption}>{item.caption}</Text>
               {item.mood && <Text style={styles.logMood}>Cảm xúc: {item.mood}</Text>}
             </View>
+            {/* ⚡ CỤM AVATAR ĐỒNG ĐỘI KHÔNG SỐ */}
+            {item.reactor_avatars && (
+              <View style={styles.bumpClusterContainer}>
+                {/* Cắt chuỗi trả về từ Backend thành mảng, lấy tối đa 4 người */}
+                {item.reactor_avatars.split(',').slice(0, 4).map((avatarUrl, index) => {
+                  // Nếu là người thứ 4, không hiện ảnh mà hiện dấu ...
+                  if (index === 3) {
+                    return (
+                      <View key="more" style={[styles.avatarCircle, styles.moreCircle, { zIndex: 4 - index }]}>
+                        <Text style={styles.moreText}>...</Text>
+                      </View>
+                    );
+                  }
+                  return (
+                    <Image 
+                      key={index} 
+                      source={{ uri: avatarUrl }} 
+                      style={[styles.avatarCircle, { zIndex: 4 - index }]} 
+                    />
+                  );
+                })}
+                <Text style={styles.bumpIconTiny}>🤜</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -180,7 +205,43 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  aiBadgeText: { fontSize: 10, fontWeight: 'bold', color: '#2d5a27' }
+  bumpClusterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    marginTop: 15,          // Đẩy cách phần nội dung nhật ký ở trên xuống 15px
+    borderTopWidth: 1,      // ⚡ Đường kẻ mờ đây rồi
+    borderColor: '#E0E0E0', // ⚡ Đổi sang màu này đậm hơn #F0F0F0 một tí cho dễ nhìn
+    
+    // ⚡ VIẾT TƯỜNG MINH ĐỂ TRỊ LỖI MẤT VIỀN:
+    paddingTop: 12,         // Khoảng cách từ đường kẻ đẩy xuống Avatar
+    paddingBottom: 12,      // Khoảng cách từ Avatar đẩy xuống mép đáy Card
+  },
+  avatarCircle: {
+    width: 36, // ⚡ TĂNG MẠNH (từ 26 lên 36)
+    height: 36, // ⚡ TĂNG MẠNH (từ 26 lên 36)
+    borderRadius: 18, // ⚡ (36 / 2)
+    borderWidth: 2,
+    borderColor: '#FFF', // ⚡ Viền trắng dầy lên nhìn nó mới tách bạch
+    marginLeft: -12, // ⚡ Tăng độ xếp chồng âm (từ -8 lên -12) cho nó khít
+    backgroundColor: '#E0E0E0',
+  },
+  moreCircle: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  moreText: {
+    fontSize: 12, // ⚡ TĂNG (từ 10 lên 12) cho dễ đọc
+    fontWeight: 'bold',
+    color: '#888',
+    marginBottom: 4, // ⚡ Căn chỉnh lại cho chữ "..." nằm giữa vòng tròn
+  },
+  bumpIconTiny: {
+    fontSize: 20, // ⚡ TĂNG MẠNH (từ 16 lên 20) cho nó hoành tráng
+    marginLeft: -6, // ⚡ Tăng khoảng cách so với avatar (từ 8 lên 12)
+    opacity: 0.9,
+  }
 });
 
 export default GoalTimelineScreen;

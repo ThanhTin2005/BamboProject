@@ -2,6 +2,53 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator,TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // hoặc fetch tùy dự án của ông
+import { Animated, Easing } from 'react-native'; // Nhớ import cái này
+
+// ⚡ COMPONENT NÚT ĐẤM TAY (Có Animation)
+const FistBumpButton = ({ logId, initialHasBumped }) => {
+  const [hasBumped, setHasBumped] = useState(initialHasBumped > 0);
+  const scaleValue = useState(new Animated.Value(1))[0];
+  const shakeValue = useState(new Animated.Value(0))[0];
+
+  const handleBump = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      // 1. Gọi API
+      const res = await axios.post('http://Phams-MacBook-Air.local:3000/api/social/bump', 
+      //const res = await axios.post('http://172.31.43.77:3000/api/social/bump', 
+        { logId }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // 2. Nếu thành công -> Animation Phóng to thu nhỏ (Nảy)
+      setHasBumped(res.data.action === 'added');
+      Animated.sequence([
+        Animated.timing(scaleValue, { toValue: 1.4, duration: 150, useNativeDriver: true }),
+        Animated.timing(scaleValue, { toValue: 1, duration: 150, useNativeDriver: true })
+      ]).start();
+
+    } catch (error) {
+      console.log("Lỗi khi đấm tay:", error.response ? error.response.data : error.message);
+      // 3. Nếu lỗi 400 (Hết 3 lượt) -> Animation Lắc ngang từ chối
+      if (error.response && error.response.status === 400) {
+        Animated.sequence([
+          Animated.timing(shakeValue, { toValue: 10, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeValue, { toValue: -10, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeValue, { toValue: 10, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeValue, { toValue: 0, duration: 50, useNativeDriver: true })
+        ]).start();
+      }
+    }
+  };
+
+  return (
+    <Animated.View style={{ transform: [{ scale: scaleValue }, { translateX: shakeValue }] }}>
+      <TouchableOpacity onPress={handleBump} activeOpacity={0.7} style={{ padding: 10 }}>
+        <Text style={{ fontSize: 24, opacity: hasBumped ? 1 : 0.4 }}>🤜</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 export default function SocialFeedScreen({navigation}) {
   const [feedData, setFeedData] = useState([]);
@@ -17,6 +64,7 @@ export default function SocialFeedScreen({navigation}) {
 
         // 3. Đính kèm Token vào Header theo chuẩn Bearer
         const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/social/getFeed', {
+        //const response = await axios.get('http://172.31.43.77:3000/api/social/getFeed', {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -42,6 +90,7 @@ export default function SocialFeedScreen({navigation}) {
     fetchFeed();
   };
 
+  // Hàm render từng chiếc Card Nhật ký
   // Hàm render từng chiếc Card Nhật ký
   const renderFeedItem = ({ item }) => (
     <View style={styles.card}>
@@ -69,9 +118,13 @@ export default function SocialFeedScreen({navigation}) {
         {item.caption}
       </Text>
 
-      {/* 3. FOOTER: Tag mục tiêu màu sắc */}
-      <View style={[styles.goalTag, { backgroundColor: item.goal_color || '#e0e0e0' }]}>
-        <Text style={styles.goalTagText}>🎯 {item.goal_title}</Text>
+      {/* 3. FOOTER: Bọc Tag mục tiêu và Nút Đấm tay nằm ngang hàng */}
+      <View style={styles.cardFooter}>
+        <View style={[styles.goalTag, { backgroundColor: item.goal_color || '#e0e0e0' }]}>
+          <Text style={styles.goalTagText}> {item.goal_title}</Text>
+        </View>
+        
+        <FistBumpButton logId={item.log_id} initialHasBumped={item.has_bumped} />
       </View>
     </View>
   );
@@ -111,10 +164,13 @@ const styles = StyleSheet.create({
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   creatorName: { fontWeight: 'bold', fontSize: 15 },
   timeText: { fontSize: 12, color: '#777' },
-  logImage: { width: '100%', height: 300, my: 8 },
+  // ⚡ Đã sửa lỗi 'my' thành 'marginVertical'
+  logImage: { width: '100%', height: 300, marginVertical: 8 }, 
   captionText: { paddingHorizontal: 12, fontSize: 14, marginVertical: 6 },
   moodText: { fontSize: 16 },
-  goalTag: { alignSelf: 'flex-start', marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 4 },
+  // ⚡ Thêm cardFooter để căn chỉnh Nút đấm tay
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 10 },
+  goalTag: { alignSelf: 'flex-start', marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   goalTagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   emptyText: { color: '#666', textAlign: 'center', fontSize: 15 }
 });

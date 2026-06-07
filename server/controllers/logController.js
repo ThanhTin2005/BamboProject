@@ -34,14 +34,21 @@ exports.createLog = async (req, res) => {
 
 exports.getLogsByGoal = async (req, res) => {
     const { goal_id } = req.params; // Lấy ID mục tiêu từ URL
-    const user_id = req.user.id;    // Lấy ID người dùng từ Token để bảo mật
+    const user_id = req.user.id;    // Lấy ID người dùng từ Token để bảo mật (Hiện tại xem bạn bè thì không ép điều kiện user_id nữa)
 
     try {
-        // Query lấy log, sắp xếp cái nào mới nhất thì lên đầu (DESC)
+        // ⚡ ĐÃ CẬP NHẬT: Đổi SELECT * thành câu lệnh lấy kèm chuỗi danh sách Avatar
         const query = `
-            SELECT * FROM logs 
-            WHERE goal_id = ? 
-            ORDER BY created_at DESC
+            SELECT 
+                l.*,
+                -- ⚡ BỐC CHUỖI AVATAR: Nối các link ảnh của những người đã bump lại cách nhau bằng dấu phẩy
+                (SELECT GROUP_CONCAT(u.avatar_url SEPARATOR ',') 
+                 FROM fist_bumps fb 
+                 JOIN users u ON fb.user_id = u.user_id 
+                 WHERE fb.log_id = l.log_id) AS reactor_avatars
+            FROM logs l 
+            WHERE l.goal_id = ? 
+            ORDER BY l.created_at DESC
         `;
         const [logs] = await db.query(query, [goal_id]);
 
@@ -50,7 +57,7 @@ exports.getLogsByGoal = async (req, res) => {
             data: logs
         });
     } catch (err) {
-        console.error("Lỗi Day 17:", err);
+        console.error("Lỗi Day 17 nâng cấp:", err);
         res.status(500).json({ error: "Không lấy được nhật ký rồi Tín ơi!" });
     }
 };

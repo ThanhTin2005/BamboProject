@@ -27,6 +27,7 @@ const HomeScreen = ({ route, navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/users/profile', {
+      //const response = await axios.get('http://172.31.43.77:3000/api/users/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data) {
@@ -47,6 +48,7 @@ const HomeScreen = ({ route, navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/goals', {
+      //const response = await axios.get('http://172.31.43.77:3000/api/goals', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data) setGoals(response.data);
@@ -61,6 +63,7 @@ const HomeScreen = ({ route, navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/social/friend-profile/${friendId}`, {
+      //const response = await axios.get(`http://172.31.43.77:3000/api/social/friend-profile/${friendId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -127,6 +130,7 @@ const HomeScreen = ({ route, navigation }) => {
       try {
         const token = await AsyncStorage.getItem('userToken');
         const response = await axios.post('http://Phams-MacBook-Air.local:3000/api/users/upload-image', formData, {
+        //const response = await axios.post('http://172.31.43.77:3000/api/users/upload-image', formData, {
           headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` },
         });
 

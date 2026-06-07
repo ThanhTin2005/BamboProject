@@ -60,6 +60,7 @@ export default function NewGoalScreen({ navigation }) {
     try {
       const token = await AsyncStorage.getItem('userToken');
       await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', formData, {
+      //await axios.post('http://172.31.43.77:3000/api/goals', formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Chỉ định gửi file
           'Authorization': `Bearer ${token}`

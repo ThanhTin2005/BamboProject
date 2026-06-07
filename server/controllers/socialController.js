@@ -17,9 +17,9 @@ const getComments = async (req, res) => {
 };
 
 const getFeed = async (req, res) => {
-  const userId = req.user.id; // ID của chính người dùng đang đăng nhập (lấy từ authMiddleware)
+  const userId = req.user.id; // ID của chính người dùng đang đăng nhập
   try {
-    // CÂU LỆNH SQL LIÊN HOÀN 4 BẢNG CHUẨN THEO ĐỊNH HƯỚNG BẠN BÈ/FOLLOW
+    // ĐÃ CẬP NHẬT: Thêm subquery đếm để check xem mình đã tương tác chưa
     const query = `
         SELECT 
             u.user_id,
@@ -31,7 +31,8 @@ const getFeed = async (req, res) => {
             g.title AS goal_title,
             g.color AS goal_color,
             u.username AS creator_name,
-            u.avatar_url AS creator_avatar
+            u.avatar_url AS creator_avatar,
+            (SELECT EXISTS(SELECT 1 FROM fist_bumps WHERE log_id = l.log_id AND user_id = ?)) AS has_bumped
         FROM logs l
         -- TẦNG 1: KẾT NỐI DỮ LIỆU (JOIN)
         JOIN goals g ON l.goal_id = g.goal_id
@@ -45,13 +46,13 @@ const getFeed = async (req, res) => {
             )
             -- 2. CHIỀU VỀ: Người ta phải follow lại tôi
             AND l.user_id IN (
-                SELECT follower_id FROM followers WHERE following_id = ?
+                SELECT follower_id FROM followers WHERE following_id = ? -- Lưu ý chỗ này bài cũ của ông đang viết nhầm chữ follower_id/following_id tùy logic follow nhé, tôi giữ nguyên cấu trúc WHERE của ông
             )
         ORDER BY l.created_at DESC;
     `;
 
-    // Thực thi câu lệnh query với db (hãy chắc chắn đầu file ông đã require biến db/pool kết nối MySQL nhé)
-    const [feedItems] = await db.execute(query, [userId, userId]);
+    // ⚡ QUAN TRỌNG: Truyền 3 lần userId tương ứng với 3 dấu ? theo thứ tự xuất hiện từ trên xuống
+    const [feedItems] = await db.execute(query, [userId, userId, userId]);
 
     // Trả dữ liệu mượt mà về cho Frontend
     res.json(feedItems);
@@ -161,5 +162,47 @@ const getFriendProfile = async (req, res) => {
     res.status(500).json({ error: "Lỗi Server." });
   }
 };
+// [API] - ĐẤM TAY ĐỒNG ĐỘI (Giới hạn 3 lần/ngày)
+// toggle - công tắc bật tắt
+const toggleFistBump = async (req, res) => {
+  const { logId } = req.body;
+  const userId = req.user.id;
 
-module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile };
+  try {
+    // 1. Check xem đã đấm tay bài này chưa
+    const [existing] = await db.query(
+      'SELECT bump_id FROM fist_bumps WHERE log_id = ? AND user_id = ?', 
+      [logId, userId]
+    );
+
+    if (existing.length > 0) {
+      // 2A. ĐÃ BẤM RỒI -> BẤM LẠI SẼ RÚT LẠI (Hoàn trả lượt)
+      await db.query('DELETE FROM fist_bumps WHERE bump_id = ?', [existing[0].bump_id]);
+      return res.status(200).json({ action: 'removed' });
+    }
+
+    // 2B. CHƯA BẤM -> KIỂM TRA GIỚI HẠN TRONG NGÀY
+    const [todayUsage] = await db.query(
+      'SELECT COUNT(*) AS count FROM fist_bumps WHERE user_id = ? AND DATE(created_at) = CURDATE()', 
+      [userId]
+    );
+
+    if (todayUsage[0].count >= 3) {
+      // ⚡ Bắn mã lỗi 400 để Frontend biết đường lắc rung Icon
+      return res.status(400).json({ error: 'Limit reached' });
+    }
+
+    // 3. THỎA MÃN ĐIỀU KIỆN -> THÊM MỚI
+    await db.query(
+      'INSERT INTO fist_bumps (log_id, user_id) VALUES (?, ?)', 
+      [logId, userId]
+    );
+    
+    res.status(200).json({ action: 'added' });
+
+  } catch (error) {
+    console.error("Lỗi khi fist bump:", error);
+    res.status(500).json({ error: "Lỗi Server" });
+  }
+};
+module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile, toggleFistBump };
