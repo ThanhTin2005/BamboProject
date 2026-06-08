@@ -43,8 +43,15 @@ const FistBumpButton = ({ logId, initialHasBumped }) => {
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleValue }, { translateX: shakeValue }] }}>
-      <TouchableOpacity onPress={handleBump} activeOpacity={0.7} style={{ padding: 10 }}>
-        <Text style={{ fontSize: 24, opacity: hasBumped ? 1 : 0.4 }}>🤜</Text>
+      <TouchableOpacity 
+        onPress={handleBump} 
+        activeOpacity={0.7} 
+        style={[
+          styles.actionBtnUI, // Style mặc định (trắng, viền xám)
+          hasBumped && styles.actionBtnUIActive // Style khi đã bấm (nền xanh, viền xanh)
+        ]}
+      >
+        <Text style={[styles.actionEmoji, { opacity: hasBumped ? 1 : 0.4 }]}>🤜</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -156,24 +163,32 @@ export default function SocialFeedScreen({navigation}) {
       </Text>
 
       {/* 3. FOOTER: Bọc Tag mục tiêu và Nút Đấm tay nằm ngang hàng */}
+      {/* 3. FOOTER: Thẻ mục tiêu ở trên, Cụm tương tác dạt trái ở dưới */}
       <View style={styles.cardFooter}>
+        
+        {/* Hàng 1: Thẻ Mục tiêu */}
         <View style={[styles.goalTag, { backgroundColor: item.goal_color || '#e0e0e0' }]}>
           <Text style={styles.goalTagText}> {item.goal_title}</Text>
         </View>
         
-        <View style={styles.interactionGroup}>
+        {/* Hàng 2: Cụm nút tương tác kiểu Facebook (Dạt trái) */}
+        <View style={styles.interactionBar}>
+          
+          {/* Nút đấm tay */}
           <FistBumpButton logId={item.log_id} initialHasBumped={item.has_bumped} />
           
+          {/* Nút bình luận */}
           <TouchableOpacity 
-            style={styles.commentButton} 
+            style={styles.actionBtnUI} // Dùng chung style nền trắng viền xám
             activeOpacity={0.6}
             onPress={() => {
-              setActiveLogId(item.log_id); // Ghi nhận đang bấm vào bài viết nào
-              setIsCommentModalVisible(true); // Kích hoạt mở Modal
+              setActiveLogId(item.log_id);
+              setIsCommentModalVisible(true);
             }}
           >
-            <Text style={{ fontSize: 22 }}>💬</Text>
+            <Text style={[styles.actionEmoji, { opacity: 0.6 }]}>💬</Text>
           </TouchableOpacity>
+
         </View>
       </View>
     </View>
@@ -268,14 +283,41 @@ const styles = StyleSheet.create({
   goalTagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   emptyText: { color: '#666', textAlign: 'center', fontSize: 15 },
   // Style căn chỉnh cụm nút đấm + bình luận nằm ngang hàng
-  interactionGroup: {
+  // --- CSS MỚI CHO CARD FOOTER & NÚT TƯƠNG TÁC ---
+  cardFooter: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  goalTag: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 12, // ⚡ Đẩy cách cụm nút bên dưới ra một chút
+  },
+  interactionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 6,
+    justifyContent: 'flex-start', // ⚡ Ép toàn bộ dạt sang trái
   },
-  commentButton: {
-    padding: 10,
-    marginLeft: 4, // Khoảng cách giãn nhẹ so với nút đấm tay
+  
+  // Nút bấm mặc định (Chưa tương tác)
+  actionBtnUI: {
+    backgroundColor: '#FFFFFF', // Nền trắng tiệp màu thẻ
+    borderWidth: 1,
+    borderColor: '#E0E0E0',     // Viền xám nhạt
+    borderRadius: 12,           // Bo tròn 2 đầu dạng viên thuốc (Pill)
+    paddingVertical: 1,
+    paddingHorizontal: 4,      // Độ rộng của nút
+    marginRight: 8,            // Cách nhau ra một chút
+  },
+  // Nút bấm khi ĐÃ tương tác (Dành riêng cho Đấm tay)
+  actionBtnUIActive: {
+    backgroundColor: '#E8F5E9', // Nền xanh lá cực nhạt
+    borderColor: '#4CAF50',     // Viền xanh lá đậm lên
+  },
+  actionEmoji: {
+    fontSize: 16, // ⚡ Thu nhỏ size lại theo ý ông (trước đó là 24 và 22)
   },
 
   // Cấu trúc CSS cho khung Modal tinh tế
