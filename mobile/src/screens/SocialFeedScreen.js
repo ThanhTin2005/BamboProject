@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator,TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator,TouchableOpacity,Modal,TextInput,Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // hoặc fetch tùy dự án của ông
 import { Animated, Easing } from 'react-native'; // Nhớ import cái này
@@ -14,8 +14,8 @@ const FistBumpButton = ({ logId, initialHasBumped }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // 1. Gọi API
-      const res = await axios.post('http://Phams-MacBook-Air.local:3000/api/social/bump', 
-      //const res = await axios.post('http://172.31.43.77:3000/api/social/bump', 
+      //const res = await axios.post('http://Phams-MacBook-Air.local:3000/api/social/bump', 
+      const res = await axios.post('http://172.31.2.204:3000/api/social/bump', 
         { logId }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -55,6 +55,12 @@ export default function SocialFeedScreen({navigation}) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Comment Modal State
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [activeLogId, setActiveLogId] = useState(null);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Hàm gọi API lấy dữ liệu bảng tin
   const fetchFeed = async () => {
     try {
@@ -63,8 +69,8 @@ export default function SocialFeedScreen({navigation}) {
         const token = await AsyncStorage.getItem('userToken');
 
         // 3. Đính kèm Token vào Header theo chuẩn Bearer
-        const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/social/getFeed', {
-        //const response = await axios.get('http://172.31.43.77:3000/api/social/getFeed', {
+        //const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/social/getFeed', {
+        const response = await axios.get('http://172.31.2.204:3000/api/social/getFeed', {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -90,7 +96,38 @@ export default function SocialFeedScreen({navigation}) {
     fetchFeed();
   };
 
-  // Hàm render từng chiếc Card Nhật ký
+  // HÀM GỌI API GỬI BÌNH LUẬN RIÊNG TƯ
+  const handleSendComment = async () => {
+    if (!commentText.trim()) {
+      Alert.alert("Nhắc nhở", "Nhập vài chữ để cổ vũ đồng đội đã ông ơi!");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      
+      // Gọi đúng API vừa dựng ở Day 40
+      //await axios.post('http://Phams-MacBook-Air.local:3000/api/social/comment', {
+      await axios.post('http://172.31.2.204:3000/api/social/comment', {
+        logId: activeLogId,
+        message: commentText
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      Alert.alert("Thành công", "Đã gửi lời động viên bí mật! 💌");
+      setCommentText('');
+      setIsCommentModalVisible(false);
+    } catch (error) {
+      console.log("Lỗi gửi lời nhắn:", error.response ? error.response.data : error.message);
+      const errorMsg = error.response?.data?.error || "Không thể kết nối đến máy chủ.";
+      Alert.alert("Thất bại", errorMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Hàm render từng chiếc Card Nhật ký
   const renderFeedItem = ({ item }) => (
     <View style={styles.card}>
@@ -124,7 +161,20 @@ export default function SocialFeedScreen({navigation}) {
           <Text style={styles.goalTagText}> {item.goal_title}</Text>
         </View>
         
-        <FistBumpButton logId={item.log_id} initialHasBumped={item.has_bumped} />
+        <View style={styles.interactionGroup}>
+          <FistBumpButton logId={item.log_id} initialHasBumped={item.has_bumped} />
+          
+          <TouchableOpacity 
+            style={styles.commentButton} 
+            activeOpacity={0.6}
+            onPress={() => {
+              setActiveLogId(item.log_id); // Ghi nhận đang bấm vào bài viết nào
+              setIsCommentModalVisible(true); // Kích hoạt mở Modal
+            }}
+          >
+            <Text style={{ fontSize: 22 }}>💬</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -148,10 +198,54 @@ export default function SocialFeedScreen({navigation}) {
         }
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>Bảng tin trống rồi. Rủ bạn bè vào cày chung thôi! 🎍</Text>
+            <Text style={styles.emptyText}>Bảng tin trống .</Text>
           </View>
         }
       />
+      <Modal
+        visible={isCommentModalVisible}
+        animationType="fade" // Hiệu ứng hiện mờ nhẹ nhàng thanh lịch
+        transparent={true}
+        onRequestClose={() => setIsCommentModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Gửi lời nhắn riêng tư 💌</Text>
+            
+            <TextInput
+              style={styles.inputStyle}
+              placeholder="Hôm nay cày cháy quá ông ơi! Cố lên... (Tối đa 150 ký tự)"
+              placeholderTextColor="#A0A0A0"
+              maxLength={150}
+              multiline={true}
+              value={commentText}
+              onChangeText={setCommentText}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.actionBtn, styles.cancelBtn]} 
+                onPress={() => {
+                  setIsCommentModalVisible(false);
+                  setCommentText(''); // Xóa nội dung nháp khi hủy
+                }}
+              >
+                <Text style={styles.cancelBtnText}>Hủy</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.actionBtn, styles.submitBtn]} 
+                onPress={handleSendComment}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.submitBtnText}>
+                  {isSubmitting ? "Đang gửi..." : "Gửi đi"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -172,5 +266,80 @@ const styles = StyleSheet.create({
   cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 10 },
   goalTag: { alignSelf: 'flex-start', marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   goalTagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  emptyText: { color: '#666', textAlign: 'center', fontSize: 15 }
+  emptyText: { color: '#666', textAlign: 'center', fontSize: 15 },
+  // Style căn chỉnh cụm nút đấm + bình luận nằm ngang hàng
+  interactionGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 6,
+  },
+  commentButton: {
+    padding: 10,
+    marginLeft: 4, // Khoảng cách giãn nhẹ so với nút đấm tay
+  },
+
+  // Cấu trúc CSS cho khung Modal tinh tế
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)', // Làm tối mờ nền phía sau chuẩn điện ảnh
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 6, // Hiệu ứng đổ bóng mượt trên Android
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 14,
+    textAlign: 'center',
+    color: '#222222',
+  },
+  inputStyle: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
+    borderRadius: 10,
+    padding: 14,
+    height: 90,
+    textAlignVertical: 'top', // Ép chữ bắt đầu từ đỉnh ô trên cả Android lẫn iOS
+    fontSize: 14,
+    color: '#333333',
+    marginBottom: 18,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelBtn: {
+    backgroundColor: '#F1F3F5',
+    marginRight: 8,
+  },
+  submitBtn: {
+    backgroundColor: '#4CAF50', // Sắc xanh lá kỷ luật đại diện của tre Bambo
+    marginLeft: 8,
+  },
+  cancelBtnText: {
+    color: '#495057',
+    fontWeight: '600',
+  },
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  }
 });

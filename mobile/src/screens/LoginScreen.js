@@ -25,8 +25,8 @@ const handleLogin = async () => {
     console.log('Đang đăng nhập...');
 
   try {
-    const response = await axios.post('http://Phams-MacBook-Air.local:3000/api/auth/login', {
-    //const response = await axios.post('http://172.31.43.77:3000/api/auth/login', {
+    //const response = await axios.post('http://Phams-MacBook-Air.local:3000/api/auth/login', {
+    const response = await axios.post('http://172.31.2.204:3000/api/auth/login', {
       username: username,
       password: password
     });

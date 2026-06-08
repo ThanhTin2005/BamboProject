@@ -27,8 +27,8 @@ export default function EditGoalScreen({ route, navigation }) {
     const fetchGoalDetails = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-//const response = await axios.get(`http://172.31.43.77:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
-const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
+const response = await axios.get(`http://172.31.2.204:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
+//const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
           headers: { Authorization: `Bearer ${token}` }
         });
         const goal = response.data;
@@ -96,8 +96,8 @@ const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/goals/
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
-      await axios.put(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, formData, {
-      //await axios.put(`http://172.31.43.77:3000/api/goals/${goalId}`, formData, {
+      //await axios.put(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, formData, {
+      await axios.put(`http://172.31.2.204:3000/api/goals/${goalId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`

@@ -26,8 +26,8 @@ const GoalTimelineScreen = ({ route,navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       
       // NHỚ THAY LẠI BẰNG ĐỊA CHỈ IP WIFI CỦA ÔNG
-      const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/logs/${goalId}`, {
-      //const response = await axios.get(`http://172.31.43.77:3000/api/logs/${goalId}`, {
+      //const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/logs/${goalId}`, {
+      const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

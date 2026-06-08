@@ -59,8 +59,8 @@ export default function NewGoalScreen({ navigation }) {
 
     try {
       const token = await AsyncStorage.getItem('userToken');
-      await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', formData, {
-      //await axios.post('http://172.31.43.77:3000/api/goals', formData, {
+      //await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', formData, {
+      await axios.post('http://172.31.2.204:3000/api/goals', formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Chỉ định gửi file
           'Authorization': `Bearer ${token}`
@@ -72,32 +72,7 @@ export default function NewGoalScreen({ navigation }) {
     }
   };
 
-  // const handleCreateGoal = async () => {
-  //   if (!title.trim() || !description.trim()) {
-  //     return Alert.alert("Thiếu thông tin", "Ông giáo điền nốt Tên và Mô tả đã nhé!");
-  //   }
-    
-  //   try {
-  //     setLoading(true);
-  //     const token = await AsyncStorage.getItem('userToken');
-      
-  //     await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', 
-  //       {
-  //         title: title,
-  //         description: description,
-  //         cover_image_url: selectedIcon, 
-  //         color: selectedColor          
-  //       },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-
-  //     navigation.goBack();
-  //   } catch (error) {
-  //     Alert.alert("Lỗi", "Server đang bận gieo tre, thử lại sau nhé!");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  
 
   return (
   

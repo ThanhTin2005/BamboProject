@@ -205,4 +205,40 @@ const toggleFistBump = async (req, res) => {
     res.status(500).json({ error: "Lỗi Server" });
   }
 };
-module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile, toggleFistBump };
+
+// [API] - GỬI LỜI NHẮN ĐỘNG VIÊN RIÊNG TƯ (Day 40)
+const addPrivateComment = async (req, res) => {
+  const senderId = req.user.id; // ID của mình lấy từ middleware protect
+  const { logId, message } = req.body;
+
+  // 1. Kiểm tra validation cơ bản
+  if (!logId || !message || message.trim() === "") {
+    return res.status(400).json({ error: "Lời nhắn không được để trống ông ơi!" });
+  }
+
+  if (message.length > 150) {
+    return res.status(400).json({ error: "Lời nhắn quá dài, tối đa 150 ký tự thôi nè." });
+  }
+
+  try {
+    // 2. Kiểm tra xem bài nhật ký (log) này có thật sự tồn tại không
+    const [logCheck] = await db.query('SELECT log_id FROM logs WHERE log_id = ?', [logId]);
+    if (logCheck.length === 0) {
+      return res.status(404).json({ error: "Bài nhật ký này không tồn tại hoặc đã bị xóa!" });
+    }
+
+    // 3. Tiến hành lưu vào database bảng private_comments
+    await db.query(
+      'INSERT INTO private_comments (log_id, sender_id, message) VALUES (?, ?, ?)',
+      [logId, senderId, message.trim()]
+    );
+
+    // 4. Trả về phản hồi thành công cho Frontend
+    res.status(200).json({ message: "Đã lưu lời động viên bí mật! 💌" });
+
+  } catch (error) {
+    console.error("Lỗi khi thêm bình luận riêng tư:", error);
+    res.status(500).json({ error: "Lỗi hệ thống server, vui lòng thử lại sau." });
+  }
+};
+module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile, toggleFistBump,addPrivateComment };

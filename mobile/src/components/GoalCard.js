@@ -12,8 +12,8 @@ const GoalCard = ({ title, description, progress = 0, coverImage, color = '#2d5a
   // Nếu không phải link, ta coi như đó là tên Icon (Day 12)
   const isFullUrl = coverImage && coverImage.startsWith('http');
 
-  //const BASE_URL = 'http://172.31.43.77:3000/uploads/'; // Thay bằng IP MacBook của ông
-  const BASE_URL = 'http://Phams-MacBook-Air.local:3000/uploads/'; // Thay bằng IP MacBook của ông
+  const BASE_URL = 'http://172.31.2.204:3000/uploads/'; // Thay bằng IP MacBook của ông
+  //const BASE_URL = 'http://Phams-MacBook-Air.local:3000/uploads/'; // Thay bằng IP MacBook của ông
 
   return (
     <View style={styles.card} >

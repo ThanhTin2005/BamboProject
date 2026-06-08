@@ -16,8 +16,8 @@ export default function FriendProfileScreen({ route, navigation }) {
     const fetchFriendData = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/social/friend-profile/${friendId}`, {
-        //const response = await axios.get(`http://172.31.43.77:3000/api/social/friend-profile/${friendId}`, {
+        //const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/social/friend-profile/${friendId}`, {
+        const response = await axios.get(`http://172.31.2.204:3000/api/social/friend-profile/${friendId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         

@@ -55,8 +55,8 @@ const CreateLogScreen = ({ route, navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // Đảm bảo IP này đang đúng
-      //const apiUrl = 'http://172.31.43.77:3000/api/logs'; 
-      const apiUrl = 'http://Phams-MacBook-Air.local:3000/api/logs'; 
+      const apiUrl = 'http://172.31.2.204:3000/api/logs'; 
+      //const apiUrl = 'http://Phams-MacBook-Air.local:3000/api/logs'; 
 
 
       const response = await fetch(apiUrl, {
