@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyInput from '../components/Input';
 import * as ImagePicker from 'expo-image-picker';
 import CustomContainer from '../components/customContainer';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
 
 
 // Bộ Icon đã fix tên theo Ionicons 7 (bỏ md-/ios-)
@@ -28,7 +29,7 @@ export default function NewGoalScreen({ navigation }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -59,8 +60,8 @@ export default function NewGoalScreen({ navigation }) {
 
     try {
       const token = await AsyncStorage.getItem('userToken');
-      //await axios.post('http://Phams-MacBook-Air.local:3000/api/goals', formData, {
-      await axios.post('http://172.31.2.204:3000/api/goals', formData, {
+      await axios.post(`${BASE_URL}/goals`, formData, {
+      //await axios.post('http://172.31.2.204:3000/api/goals', formData, {
         headers: {
           'Content-Type': 'multipart/form-data', // Chỉ định gửi file
           'Authorization': `Bearer ${token}`

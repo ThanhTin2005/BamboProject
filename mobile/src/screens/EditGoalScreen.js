@@ -8,6 +8,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import MyInput from '../components/Input';
 import * as ImagePicker from 'expo-image-picker';
 import CustomContainer from '../components/customContainer';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 const ICONS = ['book', 'fitness', 'code-working', 'walk', 'leaf'];
 const COLORS = ['#2d5a27', '#4A90E2', '#F5A623', '#D0021B'];
@@ -27,8 +29,8 @@ export default function EditGoalScreen({ route, navigation }) {
     const fetchGoalDetails = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-const response = await axios.get(`http://172.31.2.204:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
-//const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
+//const response = await axios.get(`http://172.31.2.204:3000/api/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
+const response = await axios.get(`${BASE_URL}/goals/${goalId}`, {//Phương thức get này đang là muốn lấy dữ liệu của cái goal đó , chứ chưa phải cập nhật , cái cập nhật là cái hanldeUpdate ở dưới cơ
           headers: { Authorization: `Bearer ${token}` }
         });
         const goal = response.data;
@@ -57,7 +59,7 @@ const response = await axios.get(`http://172.31.2.204:3000/api/goals/${goalId}`,
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -96,8 +98,8 @@ const response = await axios.get(`http://172.31.2.204:3000/api/goals/${goalId}`,
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
-      //await axios.put(`http://Phams-MacBook-Air.local:3000/api/goals/${goalId}`, formData, {
-      await axios.put(`http://172.31.2.204:3000/api/goals/${goalId}`, formData, {
+      await axios.put(`${BASE_URL}/goals/${goalId}`, formData, {
+      //await axios.put(`http://172.31.2.204:3000/api/goals/${goalId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`

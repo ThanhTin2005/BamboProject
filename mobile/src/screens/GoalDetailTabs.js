@@ -9,6 +9,8 @@ import CustomContainer from '../components/customContainer'; // Căn phòng đ�
 // Import 2 "căn phòng" vừa tạo
 import GoalOverviewScreen from './GoalOverviewScreen';
 import GoalTimelineScreen from './GoalTimelineScreen'; // Tên mới của GoalDetailScreen cũ
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 const Tab = createMaterialTopTabNavigator();
 

@@ -12,6 +12,8 @@ import {
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 const GoalTimelineScreen = ({ route,navigation }) => {
   // Lấy ID và Tên mục tiêu từ HomeScreen truyền sang
@@ -26,8 +28,8 @@ const GoalTimelineScreen = ({ route,navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       
       // NHỚ THAY LẠI BẰNG ĐỊA CHỈ IP WIFI CỦA ÔNG
-      //const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/logs/${goalId}`, {
-      const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
+      const response = await axios.get(`${BASE_URL}/logs/${goalId}`, {
+      //const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

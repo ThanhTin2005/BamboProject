@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 const EditProfileScreen = ({ route, navigation }) => {
   // Lấy dữ liệu cũ truyền từ màn hình Profile sang để người dùng sửa
@@ -18,8 +20,8 @@ const EditProfileScreen = ({ route, navigation }) => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.put('http://172.31.2.204:3000/api/user/profile', 
-      //const response = await axios.put('http://Phams-MacBook-Air.local:3000/api/user/profile', 
+      //const response = await axios.put('http://172.31.2.204:3000/api/user/profile', 
+      const response = await axios.put(`${BASE_URL}/user/profile`, 
         { name, slogan },
         { headers: { Authorization: `Bearer ${token}` } }
       );

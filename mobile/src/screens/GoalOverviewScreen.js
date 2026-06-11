@@ -6,6 +6,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 // Hàm hỗ trợ format ngày chuẩn YYYY-MM-DD để dễ so sánh
 const formatDate = (dateObj) => {
@@ -31,8 +33,8 @@ const GoalOverviewScreen = ({ route, navigation }) => {
       setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
       // Đảm bảo IP chuẩn của ông
-      //const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/logs/${goalId}`, {
-      const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
+      const response = await axios.get(`${BASE_URL}/logs/${goalId}`, {
+      //const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

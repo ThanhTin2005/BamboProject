@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity ,Image} from 'react-native';//THêm image tại ngày 14 
 import { Ionicons } from '@expo/vector-icons';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
 
 // Nhận props riêng biệt, không split chuỗi nữa cho nó nhẹ máy
 const GoalCard = ({ title, description, progress = 0, coverImage, color = '#2d5a27' }) => { //thay iconName = 'leaf' bằng coverImage tại ngày 14
@@ -12,8 +13,8 @@ const GoalCard = ({ title, description, progress = 0, coverImage, color = '#2d5a
   // Nếu không phải link, ta coi như đó là tên Icon (Day 12)
   const isFullUrl = coverImage && coverImage.startsWith('http');
 
-  const BASE_URL = 'http://172.31.2.204:3000/uploads/'; // Thay bằng IP MacBook của ông
-  //const BASE_URL = 'http://Phams-MacBook-Air.local:3000/uploads/'; // Thay bằng IP MacBook của ông
+  //const BASE_URL = 'http://172.31.2.204:3000/uploads/'; // Thay bằng IP MacBook của ông
+  const BASE_URL = `${BASE_URL}/uploads/`; // Thay bằng IP MacBook của ông
 
   return (
     <View style={styles.card} >

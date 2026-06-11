@@ -11,6 +11,7 @@ import {
   Keyboard,
   Alert 
 } from 'react-native';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
 
 // Tiếp tục dùng "đệ" MyInput để tiết kiệm thời gian code
 import MyInput from '../components/Input';
@@ -28,8 +29,8 @@ export default function RegisterScreen({ navigation }) {
 
   try {
     // THAY IP_CUA_ONG bằng địa chỉ IP thật của máy Mac
-    //const response = await axios.post('http://Phams-MacBook-Air.local:3000/api/auth/register', {
-    const response = await axios.post('http://172.31.2.204:3000/api/auth/register', {
+    const response = await axios.post(`${BASE_URL}/auth/register`, {
+    //const response = await axios.post('http://172.31.2.204:3000/api/auth/register', {
       username: username,
       password: password
     });

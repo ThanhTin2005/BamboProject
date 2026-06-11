@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndica
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios'; // hoặc fetch tùy dự án của ông
 import { Animated, Easing } from 'react-native'; // Nhớ import cái này
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
 
 // ⚡ COMPONENT NÚT ĐẤM TAY (Có Animation)
 const FistBumpButton = ({ logId, initialHasBumped }) => {
@@ -14,8 +15,8 @@ const FistBumpButton = ({ logId, initialHasBumped }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // 1. Gọi API
-      //const res = await axios.post('http://Phams-MacBook-Air.local:3000/api/social/bump', 
-      const res = await axios.post('http://172.31.2.204:3000/api/social/bump', 
+      const res = await axios.post(`${BASE_URL}/social/bump`, 
+      //const res = await axios.post('http://172.31.2.204:3000/api/social/bump', 
         { logId }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -76,8 +77,8 @@ export default function SocialFeedScreen({navigation}) {
         const token = await AsyncStorage.getItem('userToken');
 
         // 3. Đính kèm Token vào Header theo chuẩn Bearer
-        //const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/social/getFeed', {
-        const response = await axios.get('http://172.31.2.204:3000/api/social/getFeed', {
+        const response = await axios.get(`${BASE_URL}/social/getFeed`, {
+        //const response = await axios.get('http://172.31.2.204:3000/api/social/getFeed', {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -115,8 +116,8 @@ export default function SocialFeedScreen({navigation}) {
       const token = await AsyncStorage.getItem('userToken');
       
       // Gọi đúng API vừa dựng ở Day 40
-      //await axios.post('http://Phams-MacBook-Air.local:3000/api/social/comment', {
-      await axios.post('http://172.31.2.204:3000/api/social/comment', {
+      await axios.post(`${BASE_URL}/social/comment`, {
+      //await axios.post('http://172.31.2.204:3000/api/social/comment', {
         logId: activeLogId,
         message: commentText
       }, {

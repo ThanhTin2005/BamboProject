@@ -41,18 +41,23 @@ const getFeed = async (req, res) => {
         WHERE 
             g.is_public = 1 
             -- 1. CHIỀU ĐI: Tôi phải follow người ta
-            AND l.user_id IN (
-                SELECT following_id FROM followers WHERE follower_id = ?
-            )
-            -- 2. CHIỀU VỀ: Người ta phải follow lại tôi
-            AND l.user_id IN (
-                SELECT follower_id FROM followers WHERE following_id = ? -- Lưu ý chỗ này bài cũ của ông đang viết nhầm chữ follower_id/following_id tùy logic follow nhé, tôi giữ nguyên cấu trúc WHERE của ông
+            AND (
+                -- ⚡ ĐIỀU KIỆN MỚI 1: Lấy bài của CHÍNH TÔI
+                l.user_id = ? 
+                
+                OR 
+                
+                -- ⚡ ĐIỀU KIỆN MỚI 2: HOẶC lấy bài của Bạn bè tương tác 2 chiều
+                (
+                    l.user_id IN (SELECT following_id FROM followers WHERE follower_id = ?)
+                    AND l.user_id IN (SELECT follower_id FROM followers WHERE following_id = ?)
+                )
             )
         ORDER BY l.created_at DESC;
     `;
 
     // ⚡ QUAN TRỌNG: Truyền 3 lần userId tương ứng với 3 dấu ? theo thứ tự xuất hiện từ trên xuống
-    const [feedItems] = await db.execute(query, [userId, userId, userId]);
+    const [feedItems] = await db.execute(query, [userId, userId, userId, userId]);
 
     // Trả dữ liệu mượt mà về cho Frontend
     res.json(feedItems);
@@ -198,6 +203,17 @@ const toggleFistBump = async (req, res) => {
       [logId, userId]
     );
     
+    // ⚡ BẮN THÔNG BÁO TỰ ĐỘNG
+      const [logOwner] = await db.query('SELECT user_id FROM logs WHERE log_id = ?', [logId]);
+      const receiverId = logOwner[0].user_id;
+      
+      if (userId !== receiverId) { // Không thông báo nếu tự đấm mình
+        await db.query(
+          'INSERT INTO notifications (receiver_id, actor_id, action_type, reference_id) VALUES (?, ?, ?, ?)',
+          [receiverId, userId, 'BUMP', logId]
+        );
+      }
+    
     res.status(200).json({ action: 'added' });
 
   } catch (error) {
@@ -222,16 +238,23 @@ const addPrivateComment = async (req, res) => {
 
   try {
     // 2. Kiểm tra xem bài nhật ký (log) này có thật sự tồn tại không
-    const [logCheck] = await db.query('SELECT log_id FROM logs WHERE log_id = ?', [logId]);
-    if (logCheck.length === 0) {
-      return res.status(404).json({ error: "Bài nhật ký này không tồn tại hoặc đã bị xóa!" });
-    }
+    const [logCheck] = await db.query('SELECT user_id FROM logs WHERE log_id = ?', [logId]);
+    if (logCheck.length === 0) return res.status(404).json({ error: "Bài log không tồn tại!" });
+
+    const receiverId = logCheck[0].user_id; // Chủ bài log 
 
     // 3. Tiến hành lưu vào database bảng private_comments
     await db.query(
       'INSERT INTO private_comments (log_id, sender_id, message) VALUES (?, ?, ?)',
       [logId, senderId, message.trim()]
     );
+    // ⚡ 2. BẮN THÔNG BÁO (Nếu mình không tự gửi cho chính mình)
+    if (senderId !== receiverId) {
+      await db.query(
+        'INSERT INTO notifications (receiver_id, actor_id, action_type, reference_id) VALUES (?, ?, ?, ?)',
+        [receiverId, senderId, 'COMMENT', logId]
+      );
+    }
 
     // 4. Trả về phản hồi thành công cho Frontend
     res.status(200).json({ message: "Đã lưu lời động viên bí mật! 💌" });
@@ -241,4 +264,83 @@ const addPrivateComment = async (req, res) => {
     res.status(500).json({ error: "Lỗi hệ thống server, vui lòng thử lại sau." });
   }
 };
-module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile, toggleFistBump,addPrivateComment };
+
+// [API] - LẤY DANH SÁCH THÔNG BÁO
+const getNotifications = async (req, res) => {
+  const myId = req.user.id;
+  try {
+    const query = `
+      SELECT 
+        n.notif_id, n.action_type, n.is_read, n.created_at, n.reference_id,
+        u.username AS actor_name, u.avatar_url AS actor_avatar,
+        g.title AS goal_title,
+        (SELECT message FROM private_comments WHERE log_id = n.reference_id AND sender_id = n.actor_id ORDER BY created_at DESC LIMIT 1) AS comment_snippet
+      FROM notifications n
+      JOIN users u ON n.actor_id = u.user_id
+      JOIN logs l ON n.reference_id = l.log_id
+      JOIN goals g ON l.goal_id = g.goal_id
+      WHERE n.receiver_id = ?
+      ORDER BY n.created_at DESC
+      LIMIT 30; -- Chỉ lấy 30 thông báo gần nhất cho nhẹ
+    `;
+    const [notifs] = await db.execute(query, [myId]);
+    res.status(200).json(notifs);
+  } catch (error) {
+    res.status(500).json({ error: "Không thể lấy thông báo." });
+  }
+};
+
+// [API] - ĐÁNH DẤU ĐÃ ĐỌC
+const markNotificationRead = async (req, res) => {
+  const { notifId } = req.params;
+  try {
+    await db.query('UPDATE notifications SET is_read = 1 WHERE notif_id = ? AND receiver_id = ?', [notifId, req.user.id]);
+    res.status(200).json({ message: "Đã đọc" });
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi update" });
+  }
+};
+
+// [API] - LẤY CHI TIẾT BÀI VIẾT & MẢNH GIẤY BÍ MẬT (Log Detail)
+const getLogDetail = async (req, res) => {
+  const { logId } = req.params;
+  const myId = req.user.id;
+
+  try {
+    // 1. Lấy thông tin bài Log
+    const logQuery = `
+      SELECT l.*, u.username, u.avatar_url, g.title AS goal_title, g.color AS goal_color
+      FROM logs l
+      JOIN users u ON l.user_id = u.user_id
+      JOIN goals g ON l.goal_id = g.goal_id
+      WHERE l.log_id = ?
+    `;
+    const [logs] = await db.query(logQuery, [logId]);
+
+    if (logs.length === 0) {
+      return res.status(404).json({ error: "Bài viết không tồn tại!" });
+    }
+    const logData = logs[0];
+
+    // 2. Lấy "Mảnh giấy bí mật" (Bảo mật: Chỉ lấy nếu mình là chủ bài viết)
+    let privateComments = [];
+    if (logData.user_id === myId) {
+      const commentQuery = `
+        SELECT c.message, u.username, c.created_at
+        FROM private_comments c
+        JOIN users u ON c.sender_id = u.user_id
+        WHERE c.log_id = ?
+        ORDER BY c.created_at DESC
+      `;
+      const [comments] = await db.query(commentQuery, [logId]);
+      privateComments = comments;
+    }
+
+    // Trả về cả 2 data
+    res.status(200).json({ log: logData, privateComments });
+  } catch (error) {
+    console.error("Lỗi getLogDetail:", error);
+    res.status(500).json({ error: "Lỗi server" });
+  }
+};
+module.exports = { toggleFollow, toggleLike, addComment, getComments, getFeed, addFriendByCode, getFriends, getFriendProfile, toggleFistBump,addPrivateComment ,getNotifications, markNotificationRead, getLogDetail };

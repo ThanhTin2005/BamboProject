@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons'; // Sử dụng icon của Expo
 import axios from 'axios';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 export default function AddFriendsScreen({ navigation }) {
   const [myCode, setMyCode] = useState('');
@@ -18,8 +20,8 @@ export default function AddFriendsScreen({ navigation }) {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // THAY ĐỔI: Sử dụng địa chỉ IP máy của ông nhé
-      const response = await axios.get('http://172.31.2.204:3000/api/social/friends', {
-      //const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/social/friends', {
+      //const response = await axios.get('http://172.31.2.204:3000/api/social/friends', {
+      const response = await axios.get(`${BASE_URL}/social/friends`, {
 
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -51,8 +53,8 @@ export default function AddFriendsScreen({ navigation }) {
     try {
       const token = await AsyncStorage.getItem('userToken');
       const response = await axios.post(
-        'http://172.31.2.204:3000/api/social/add-by-code',
-        //'http://Phams-MacBook-Air.local:3000/api/social/add-by-code',
+        //'http://172.31.2.204:3000/api/social/add-by-code',
+        `${BASE_URL}/social/add-by-code`,
 
         { inviteCode: inputCode.trim() },
         { headers: { Authorization: `Bearer ${token}` } }

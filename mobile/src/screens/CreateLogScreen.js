@@ -6,6 +6,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 const CreateLogScreen = ({ route, navigation }) => {
   const { goalId, goalName } = route.params; 
@@ -21,6 +23,7 @@ const CreateLogScreen = ({ route, navigation }) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
+      aspect: [1, 1], 
       quality: 1,
     });
 
@@ -55,8 +58,8 @@ const CreateLogScreen = ({ route, navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // Đảm bảo IP này đang đúng
-      const apiUrl = 'http://172.31.2.204:3000/api/logs'; 
-      //const apiUrl = 'http://Phams-MacBook-Air.local:3000/api/logs'; 
+      //const apiUrl = 'http://172.31.2.204:3000/api/logs'; 
+      const apiUrl = `${BASE_URL}/logs`; 
 
 
       const response = await fetch(apiUrl, {

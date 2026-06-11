@@ -16,6 +16,7 @@ import EditProfileScreen from './src/screens/EditProfileScreen';
 import EditGoalScreen from './src/screens/EditGoalScreen';
 import SocialFeedScreen from './src/screens/SocialFeedScreen';
 import FriendProfileScreen from './src/screens/FriendProfileScreen';
+import LogDetailScreen from './src/screens/LogDetailScreen';
 
 
 const Stack = createStackNavigator();
@@ -56,6 +57,7 @@ export default function App() {
             headerTitleStyle: { fontWeight: 'bold' },
           }} 
         />
+        <Stack.Screen name="LogDetail" component={LogDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </SafeAreaProvider>

@@ -11,6 +11,8 @@ import {
   TouchableWithoutFeedback, 
   Keyboard 
 } from 'react-native';
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 // Gọi "đệ" MyInput từ folder components sang làm việc
 import MyInput from '../components/Input';
@@ -25,8 +27,8 @@ const handleLogin = async () => {
     console.log('Đang đăng nhập...');
 
   try {
-    //const response = await axios.post('http://Phams-MacBook-Air.local:3000/api/auth/login', {
-    const response = await axios.post('http://172.31.2.204:3000/api/auth/login', {
+    const response = await axios.post(`${BASE_URL}/auth/login`, {
+    //const response = await axios.post('http://192.168.0.106:3000/api/auth/login', {
       username: username,
       password: password
     });

@@ -4,6 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer'; 
+import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+
 
 // ⚡ BỔ SUNG: Nhận thêm 'route' để check xem có friendId truyền sang không
 const HomeScreen = ({ route, navigation }) => {
@@ -26,8 +28,8 @@ const HomeScreen = ({ route, navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
-      //const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/users/profile', {
-      const response = await axios.get('http://172.31.2.204:3000/api/users/profile', {
+      const response = await axios.get(`${BASE_URL}/users/profile`, {
+      //const response = await axios.get('http://172.31.2.204:3000/api/users/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data) {
@@ -47,8 +49,8 @@ const HomeScreen = ({ route, navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
-      //const response = await axios.get('http://Phams-MacBook-Air.local:3000/api/goals', {
-      const response = await axios.get('http://172.31.2.204:3000/api/goals', {
+      const response = await axios.get(`${BASE_URL}/goals`, {
+      //const response = await axios.get('http://172.31.2.204:3000/api/goals', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data) setGoals(response.data);
@@ -62,8 +64,8 @@ const HomeScreen = ({ route, navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
-      //const response = await axios.get(`http://Phams-MacBook-Air.local:3000/api/social/friend-profile/${friendId}`, {
-      const response = await axios.get(`http://172.31.2.204:3000/api/social/friend-profile/${friendId}`, {
+      const response = await axios.get(`${BASE_URL}/social/friend-profile/${friendId}`, {
+      //const response = await axios.get(`http://172.31.2.204:3000/api/social/friend-profile/${friendId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -110,7 +112,7 @@ const HomeScreen = ({ route, navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: uploadType === 'avatar' ? [1, 1] : [16, 9],
-      quality: 0.6,
+      quality: 1,
     });
 
     if (!result.canceled) {
@@ -129,8 +131,8 @@ const HomeScreen = ({ route, navigation }) => {
 
       try {
         const token = await AsyncStorage.getItem('userToken');
-        //const response = await axios.post('http://Phams-MacBook-Air.local:3000/api/users/upload-image', formData, {
-        const response = await axios.post('http://172.31.2.204:3000/api/users/upload-image', formData, {
+        const response = await axios.post(`${BASE_URL}/users/upload-image`, formData, {
+        //const response = await axios.post('http://172.31.2.204:3000/api/users/upload-image', formData, {
           headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` },
         });
 
