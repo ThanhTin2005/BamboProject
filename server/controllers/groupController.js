@@ -213,3 +213,26 @@ exports.reviewGroupLog = async (req, res) => {
         if (connection) connection.release();
     }
 };
+// GET /api/groups/:groupId/gallery - API Lấy thư viện ảnh (Chỉ ảnh đã duyệt)
+exports.getGroupGallery = async (req, res) => {
+    const { groupId } = req.params;
+    let connection;
+    try {
+        connection = await db.getConnection();
+        
+        // ⚡ Điều kiện gắt: Chỉ lấy ảnh có status là 'verified' hoặc 'auto_approved'
+        const [gallery] = await connection.query(`
+            SELECT log_id, image_url, created_at 
+            FROM logs 
+            WHERE group_id = ? AND status IN ('verified')
+            ORDER BY created_at DESC
+        `, [groupId]);
+
+        res.status(200).json({ data: gallery });
+    } catch (error) {
+        console.error('Lỗi lấy gallery nhóm:', error);
+        res.status(500).json({ message: 'Lỗi hệ thống khi tải thư viện ảnh.' });
+    } finally {
+        if (connection) connection.release();
+    }
+};

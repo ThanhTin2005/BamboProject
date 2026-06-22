@@ -34,7 +34,12 @@ export default function GroupMainScreen({ route, navigation }) {
                     tabBarLabelStyle: { fontSize: 14, fontWeight: 'bold', textTransform: 'none' },
                 }}
             >
-                <Tab.Screen name="Overview" component={GroupOverviewTab} options={{ title: 'Tổng quan' }} />
+                <Tab.Screen 
+                    name="Tổng quan" 
+                    component={GroupOverviewTab} 
+                    // ⚡ PHẢI CÓ DÒNG NÀY: Để ném cái groupId từ MainScreen xuống cho Tab Tổng quan dùng
+                    initialParams={{ groupId: groupId, role: group.role }} 
+                />
                 <Tab.Screen 
                     name="Timeline" 
                     component={GroupTimelineTab} 

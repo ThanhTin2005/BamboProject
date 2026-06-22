@@ -11,5 +11,6 @@ router.get('/my-groups', authenticateToken, groupController.getMyGroups);
 router.post('/:groupId/logs', authenticateToken, uploadCloud.single('image'), groupController.submitGroupLog);
 router.get('/:groupId/timeline', authenticateToken, groupController.getGroupTimeline);
 router.put('/:groupId/logs/:logId/review', authenticateToken, groupController.reviewGroupLog);
+router.get('/:groupId/gallery', authenticateToken, groupController.getGroupGallery);
 
 module.exports = router;
