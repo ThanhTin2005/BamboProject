@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, StatusBar, Image } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -37,31 +37,43 @@ export default function GroupIndexScreen({ navigation }) {
 
     const renderGroupItem = ({ item }) => (
         <TouchableOpacity 
-            style={styles.groupCard}
-            onPress={() => navigation.navigate('GroupMain', { group: { id: item.group_id, title: item.title, role: item.role } })}
-            activeOpacity={0.7} 
+          style={styles.goalRow} 
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate('GroupMain', { 
+            groupId: item.group_id, 
+            group: item 
+          })}
         >
-            <View style={styles.cardHeader}>
-                <Text style={styles.groupTitle}>{item.title}</Text>
-                <Ionicons name="chevron-forward" size={18} color="#999" />
-            </View>
-            
-            <Text style={styles.groupDesc} numberOfLines={2}>
-                {item.description ? item.description : 'Không có mô tả cho khế ước này.'}
+          {/* CỘT TRÁI: ẢNH NHÓM TRÀN MÉP */}
+          <Image 
+            source={{ uri: item.group_image || 'https://ui-avatars.com/api/?name=Bambo+Group&background=4CAF50&color=fff&size=256' }} 
+            style={styles.rowImage} 
+          />
+    
+          {/* CỘT PHẢI: THÔNG TIN */}
+          <View style={styles.rowRight}>
+            <Text style={styles.rowTitle} numberOfLines={1}>{item.title}</Text>
+            <Text style={styles.rowDescription} numberOfLines={1}>
+              {item.description || 'Chưa có mô tả cho khế ước này...'}
             </Text>
             
-            <View style={styles.cardFooter}>
-                <View style={[styles.roleBadge, item.role === 'leader' ? styles.leaderBadge : styles.memberBadge]}>
-                    <Text style={[styles.roleText, item.role === 'leader' ? styles.leaderText : styles.memberText]}>
-                        {item.role === 'leader' ? '👑 Trưởng nhóm' : 'Thành viên'}
-                    </Text>
-                </View>
-                
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={styles.memberCount}>4/4 </Text>
-                    <Ionicons name="people" size={12} color="#999" />
-                </View>
+            {/* THANH PROGRESS: Đại diện cho số lượng thành viên đã join */}
+            <View style={styles.rowProgressBar}>
+              <View style={[
+                styles.rowProgressFill, 
+                { 
+                  width: `${((item.member_count || 1) / 4) * 100}%`, 
+                  backgroundColor: '#4CAF50' 
+                }
+              ]} /> 
             </View>
+            
+            {/* THỐNG KÊ Ở ĐÁY */}
+            <View style={styles.rowStats}>
+              <Text style={styles.rowProgressText}>👥 {item.member_count || 1}/4 thành viên</Text>
+              <Text style={styles.rowStreakText}>🔥 Sinh tồn nhóm</Text>
+            </View>
+          </View>
         </TouchableOpacity>
     );
 
@@ -112,7 +124,7 @@ export default function GroupIndexScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 20 },
+    container: { flex: 1, backgroundColor: '#F4F7F4', paddingHorizontal: 20 }, // Sửa màu nền xám nhẹ giống HomeScreen
     centerContent: { justifyContent: 'center', alignItems: 'center' },
     loadingText: { color: '#999', marginTop: 15, fontSize: 14, fontStyle: 'italic' },
 
@@ -123,27 +135,78 @@ const styles = StyleSheet.create({
     createBtn: { backgroundColor: '#4CAF50', marginRight: 7 }, 
     createBtnText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
     
-    joinBtn: { backgroundColor: '#F5F5F5', borderWidth: 1, borderColor: '#E0E0E0', marginLeft: 7 }, 
+    joinBtn: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E0E0E0', marginLeft: 7 }, 
     joinBtnText: { color: '#4CAF50', fontWeight: 'bold', fontSize: 15 },
     
     listSection: { flex: 1 },
-    sectionTitle: { color: '#212121', fontSize: 18, fontWeight: 'bold', marginBottom: 20, letterSpacing: 0.5 },
-    listContent: { paddingBottom: 30 },
+    sectionTitle: { color: '#2d5a27', fontSize: 18, fontWeight: 'bold', marginBottom: 20 }, // Đổi màu chữ xanh lá đậm cho tone-sur-tone
+    listContent: { paddingBottom: 100 },
     
-    groupCard: { backgroundColor: '#F9F9F9', padding: 20, borderRadius: 16, marginBottom: 15, borderWidth: 1, borderColor: '#EBF0EB' },
-    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-    groupTitle: { color: '#212121', fontSize: 17, fontWeight: '700' },
-    groupDesc: { color: '#666666', fontSize: 14, marginBottom: 15, lineHeight: 20 },
-    
-    cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    roleBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-    leaderBadge: { backgroundColor: 'rgba(76, 175, 80, 0.1)' }, 
-    memberBadge: { backgroundColor: '#EEEEEE' },
-    roleText: { fontSize: 11, fontWeight: 'bold' },
-    leaderText: { color: '#4CAF50' },
-    memberText: { color: '#666666' },
-    
-    memberCount: { color: '#999', fontSize: 12 },
+    // --- CSS ĐỒNG BỘ 100% VỚI THẺ CÁ NHÂN ---
+    goalRow: { 
+        flexDirection: 'row', 
+        backgroundColor: '#fff', 
+        marginHorizontal: 0, // ⚡ Đã sửa về 0 để thẻ bung ra hết chiều ngang màn hình
+        marginBottom: 16, 
+        borderRadius: 20, 
+        overflow: 'hidden', 
+        elevation: 3, 
+        shadowColor: '#000', 
+        shadowOpacity: 0.06, 
+        shadowRadius: 8, 
+        alignItems: 'stretch', 
+    },
+    rowImage: { 
+        width: 120, 
+        minHeight: 120, // ⚡ Giúp ảnh luôn vuông vắn, không bị xẹp khi chữ quá ít
+        borderTopLeftRadius: 20, 
+        borderBottomLeftRadius: 20, 
+        resizeMode: 'cover', 
+        backgroundColor: '#F0F5F0' 
+    },
+    rowRight: { 
+        flex: 1, 
+        paddingVertical: 16, 
+        paddingHorizontal: 16, 
+        justifyContent: 'center', 
+    },
+    rowTitle: { 
+        fontSize: 18, 
+        fontWeight: 'bold', 
+        color: '#1a3317', 
+        marginBottom: 4 
+    },
+    rowDescription: { 
+        fontSize: 14, 
+        color: '#666', 
+        marginBottom: 12 
+    },
+    rowProgressBar: { 
+        height: 8, 
+        backgroundColor: '#E0EAE0', 
+        borderRadius: 4, 
+        marginBottom: 8, 
+        overflow: 'hidden' 
+    },
+    rowProgressFill: { 
+        height: '100%', 
+        borderRadius: 4 
+    },
+    rowStats: { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center' 
+    },
+    rowProgressText: { 
+        fontSize: 12, 
+        color: '#777', 
+        fontWeight: '600' 
+    },
+    rowStreakText: { 
+        fontSize: 12, 
+        color: '#ff4500', 
+        fontWeight: 'bold' 
+    },
 
     emptyState: { flex: 1, alignItems: 'center', marginTop: 80 },
     emptyText: { color: '#212121', fontSize: 16, fontWeight: '600', marginTop: 25 },

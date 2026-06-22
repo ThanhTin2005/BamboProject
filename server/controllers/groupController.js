@@ -5,6 +5,8 @@ const db = require('../db');
 exports.createGroup = async (req, res) => {
     const { title, description } = req.body;
     const userId = req.user.id; // Lấy từ middleware auth xác thực JWT
+    // ⚡ Lấy link ảnh từ Cloudinary, nếu user lười không chọn thì đắp ảnh mặc định
+    const groupImage = req.file ? req.file.path : 'https://via.placeholder.com/150';
 
     if (!title) {
         return res.status(400).json({ message: 'Tên nhóm không được để trống.' });
@@ -16,8 +18,8 @@ exports.createGroup = async (req, res) => {
 
         // Thêm vào bảng groups
         const [groupResult] = await connection.query(
-            'INSERT INTO `groups` (title, description) VALUES (?, ?)',
-            [title, description]
+            'INSERT INTO `groups` (title,group_image, description) VALUES (?, ?, ?)', 
+            [title, groupImage, description]
         );
         const groupId = groupResult.insertId;
 
@@ -99,13 +101,21 @@ exports.getMyGroups = async (req, res) => {
     try {
         connection = db.getConnection ? await db.getConnection() : db;
         
-        // Lấy toàn bộ nhóm mà user đang tham gia
-        const [groups] = await connection.query(
-            'SELECT g.group_id, g.title, g.description, gm.role FROM group_members gm JOIN `groups` g ON gm.group_id = g.group_id WHERE gm.user_id = ? ORDER BY gm.joined_at DESC',
-            [userId]
-        );
+        // ⚡ Đã thêm g.group_image và truy vấn đếm số lượng thành viên thực tế
+        const [groups] = await connection.query(`
+            SELECT 
+                g.group_id, 
+                g.title, 
+                g.description, 
+                g.group_image, 
+                gm.role,
+                (SELECT COUNT(*) FROM group_members WHERE group_id = g.group_id) AS member_count
+            FROM group_members gm 
+            JOIN \`groups\` g ON gm.group_id = g.group_id 
+            WHERE gm.user_id = ? 
+            ORDER BY gm.joined_at DESC
+        `, [userId]);
 
-        // Trả về mảng groups (nếu chưa có nhóm nào thì mảng rỗng [])
         res.status(200).json({ groups });
     } catch (error) {
         console.error('Lỗi lấy danh sách nhóm:', error);
