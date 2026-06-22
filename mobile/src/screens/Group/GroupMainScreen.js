@@ -18,21 +18,10 @@ export default function GroupMainScreen({ route, navigation }) {
             <View style={styles.header}>
                 <View style={styles.headerTop}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                        <Ionicons name="arrow-back" size={24} color="#212121" />
+                        <Ionicons name="arrow-back" size={30} color="#212121" />
                     </TouchableOpacity>
                     <Text style={styles.groupTitle} numberOfLines={1}>{group.title}</Text>
                     <View style={styles.spacer} />
-                </View>
-
-                <View style={styles.headerInfo}>
-                    <View style={styles.roleBadge}>
-                        <Text style={styles.roleText}>
-                            {group.role === 'leader' ? 'Trưởng nhóm' : 'Thành viên'}
-                        </Text>
-                    </View>
-                    <View style={styles.inviteWrapper}>
-                        <Text style={styles.inviteCode}>Mã nhóm: #{groupId}</Text>
-                    </View>
                 </View>
             </View>
 

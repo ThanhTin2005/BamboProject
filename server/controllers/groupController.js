@@ -169,3 +169,37 @@ exports.getGroupTimeline = async (req, res) => {
         if (connection) connection.release();
     }
 };
+
+// PUT /api/groups/:groupId/logs/:logId/review , API kiểm tra quyền Leader và duyệt bài (verified/rejected)
+exports.reviewGroupLog = async (req, res) => {
+    const { groupId, logId } = req.params;
+    const { status } = req.body; // Bắt buộc là 'verified' hoặc 'rejected'
+    const userId = req.user.id;
+
+    let connection;
+    try {
+        connection = await db.getConnection();
+        
+        // 1. Kiểm tra xem thằng đang gọi API có phải là Leader không?
+        const [checkRole] = await connection.query(`
+            SELECT role FROM group_members 
+            WHERE group_id = ? AND user_id = ?
+        `, [groupId, userId]);
+
+        if (checkRole.length === 0 || checkRole[0].role !== 'leader') {
+            return res.status(403).json({ message: 'Ông không có quyền Leader để duyệt bài!' });
+        }
+
+        // 2. Cập nhật trạng thái
+        await connection.query(`
+            UPDATE logs SET status = ? WHERE log_id = ? AND group_id = ?
+        `, [status, logId, groupId]);
+
+        res.status(200).json({ message: `Đã ${status === 'verified' ? 'duyệt' : 'từ chối'} minh chứng!` });
+    } catch (error) {
+        console.error('Lỗi duyệt bài:', error);
+        res.status(500).json({ message: 'Lỗi hệ thống khi duyệt bài.' });
+    } finally {
+        if (connection) connection.release();
+    }
+};
