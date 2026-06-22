@@ -269,13 +269,30 @@ export default function SocialFeedScreen({navigation}) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' ,paddingTop: 40},
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  card: { backgroundColor: '#fff', marginBottom: 12, paddingVertical: 12, borderRadius: 8 },
+// THAY THẾ ĐOẠN CSS CŨ CỦA CARD BẰNG ĐOẠN NÀY
+  card: { 
+    backgroundColor: '#fff', 
+    marginHorizontal: 16, // ⚡ Tạo khoảng cách hở 2 bên mép màn hình
+    marginTop: 15,        // ⚡ Khoảng cách với thẻ phía trên
+    marginBottom: 5,
+    paddingVertical: 15,  
+    borderRadius: 16,     // ⚡ Bo góc to và tròn trịa hơn giống giao diện nhóm
+    borderWidth: 1,       // ⚡ Thêm viền mờ
+    borderColor: '#F0F0F0',
+    // Hiệu ứng đổ bóng nổi 3D (Z-index)
+    elevation: 3,         // Cho Android
+    shadowColor: '#000',  // Cho iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    overflow: 'hidden',   // Đảm bảo ảnh bên trong không bị tràn ra ngoài góc bo
+  },
   cardHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, marginBottom: 8 },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   creatorName: { fontWeight: 'bold', fontSize: 15 },
   timeText: { fontSize: 12, color: '#777' },
   // ⚡ Đã sửa lỗi 'my' thành 'marginVertical'
-  logImage: { width: '100%', height: 300, marginVertical: 8 }, 
+  logImage: { width: '100%', height: 300, marginVertical: 12 }, 
   captionText: { paddingHorizontal: 12, fontSize: 14, marginVertical: 6 },
   moodText: { fontSize: 16 },
   // ⚡ Thêm cardFooter để căn chỉnh Nút đấm tay

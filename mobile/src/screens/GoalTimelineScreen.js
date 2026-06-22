@@ -150,7 +150,7 @@ const GoalTimelineScreen = ({ route,navigation }) => {
           style={styles.fabCheckIn}
           onPress={() => navigation.navigate('CreateLog', { goalId: goalId })}
         >
-          <Text style={styles.fabText}>✍️ Check-in Hôm nay</Text>
+          <Text style={styles.fabText}>Check-in Hôm nay</Text>
         </TouchableOpacity>
       )}
     </CustomContainer>

@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const userRoutes = require('./routes/userRoutes');
 const socialRoutes = require('./routes/socialRoutes'); // Thêm dòng này
+const groupRoutes = require('./routes/groupRoutes'); // Thêm dòng này
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/goals', goalRoutes);// Thêm dòng này vào phần cấu hình ro
 app.use('/api/logs', require('./routes/logRoutes'));
 app.use('/api/users', userRoutes); // Route cho user profile, update, v.v.
 app.use('/api/social', socialRoutes); // Thêm dòng này
+app.use('/api/groups', groupRoutes); // Thêm dòng này
 
 // --- START SERVER ---
 const PORT = process.env.PORT || 3000;
