@@ -7,7 +7,7 @@ exports.getUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const [rows] = await db.execute(
-      "SELECT user_id, username as name, bio as slogan, avatar_url, cover_url FROM users WHERE user_id = ?",
+      "SELECT user_id, username as name,  slogan, avatar_url, cover_url FROM users WHERE user_id = ?",
       [userId]
     );
 
@@ -33,7 +33,7 @@ exports.updateProfile = async (req, res) => {
     }
 
     const [result] = await db.execute(
-      "UPDATE users SET username = ?, bio = ? WHERE user_id = ?",
+      "UPDATE users SET username = ?, slogan = ? WHERE user_id = ?",
       [name, slogan, userId]
     );
 
@@ -43,7 +43,7 @@ exports.updateProfile = async (req, res) => {
 
     res.json({ 
       message: "Cập nhật thành công!", 
-      data: { username: name, bio: slogan } 
+      data: { username: name, slogan: slogan } 
     });
   } catch (error) {
     console.error("Lỗi cập nhật Profile:", error);

@@ -3,11 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer';
-import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
-
+import { BASE_URL } from '../config'; 
 
 const EditProfileScreen = ({ route, navigation }) => {
-  // Lấy dữ liệu cũ truyền từ màn hình Profile sang để người dùng sửa
   const { currentName, currentSlogan } = route.params;
 
   const [name, setName] = useState(currentName);
@@ -20,21 +18,46 @@ const EditProfileScreen = ({ route, navigation }) => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      //const response = await axios.put('http://172.31.2.204:3000/api/user/profile', 
-      const response = await axios.put(`${BASE_URL}/user/profile`, 
+      const response = await axios.put(`${BASE_URL}/users/profile`, 
         { name, slogan },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.status === 200) {
         Alert.alert("Thành công", "Thông tin đã được cập nhật!");
-        navigation.goBack(); // Quay lại trang Dashboard
+        navigation.goBack(); 
       }
     } catch (error) {
       Alert.alert("Lỗi", "Không thể cập nhật thông tin lúc này");
     } finally {
       setLoading(false);
     }
+  };
+
+  // ⚡ 2. HÀM XỬ LÝ ĐĂNG XUẤT 
+  const handleLogout = () => {
+      Alert.alert(
+          "Đăng xuất",
+          "Ông có chắc chắn muốn rời khỏi Bambo không?",
+          [
+              { text: "Hủy", style: "cancel" },
+              { 
+                  text: "Đăng xuất", 
+                  style: "destructive", 
+                  onPress: async () => {
+                      try {
+                          await AsyncStorage.removeItem('userToken');
+                          navigation.reset({
+                              index: 0,
+                              routes: [{ name: 'Login' }], 
+                          });
+                      } catch (error) {
+                          console.error("Lỗi khi đăng xuất:", error);
+                      }
+                  } 
+              }
+          ]
+      );
   };
 
   return (
@@ -64,6 +87,15 @@ const EditProfileScreen = ({ route, navigation }) => {
         >
           <Text style={styles.btnText}>{loading ? "Đang lưu..." : "Lưu thay đổi"}</Text>
         </TouchableOpacity>
+
+        {/* ⚡ NÚT ĐĂNG XUẤT ĐƯỢC THÊM VÀO ĐÂY */}
+        <TouchableOpacity 
+          style={styles.logoutBtn} 
+          onPress={handleLogout}
+        >
+          <Text style={styles.logoutBtnText}>Đăng xuất</Text>
+        </TouchableOpacity>
+        
       </View>
     </CustomContainer>
   );
@@ -77,11 +109,27 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 15, marginBottom: 20, fontSize: 16 
   },
   btn: { 
-    backgroundColor: '#39FF14', padding: 18, borderRadius: 15, 
+    backgroundColor: '#4CAF50', padding: 18, borderRadius: 15, 
     alignItems: 'center', marginTop: 10,
-    elevation: 5, shadowColor: '#39FF14', shadowOpacity: 0.3, shadowRadius: 10
+    elevation: 5, shadowColor: '#4CAF50', shadowOpacity: 0.3, shadowRadius: 10
   },
-  btnText: { color: '#1a3317', fontWeight: 'bold', fontSize: 18 }
+  btnText: { color: '#1a3317', fontWeight: 'bold', fontSize: 18 },
+
+  // ⚡ CSS CHO NÚT ĐĂNG XUẤT
+  logoutBtn: { 
+    marginTop: 20, // Cách nút Lưu một khoảng
+    padding: 18, 
+    borderRadius: 15, 
+    backgroundColor: '#FFF0F0', // Nền đỏ siêu nhạt
+    borderWidth: 1,
+    borderColor: '#FFD6D6', // Viền đỏ nhạt
+    alignItems: 'center',
+  },
+  logoutBtnText: { 
+    color: '#FF3B30', // Chữ đỏ thuần Apple
+    fontWeight: 'bold', 
+    fontSize: 18 
+  }
 });
 
 export default EditProfileScreen;

@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { ImageBackground, View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Platform } from 'react-native';
+import { ImageBackground, View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Platform, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer'; 
-import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+import { BASE_URL } from '../config'; 
+// ⚡ IMPORT THƯ VIỆN XEM ẢNH FULL MÀN HÌNH
+import ImageViewing from 'react-native-image-viewing';
 
-
-// ⚡ BỔ SUNG: Nhận thêm 'route' để check xem có friendId truyền sang không
 const HomeScreen = ({ route, navigation }) => {
   
-  // ⚡ LOGIC KIỂM TRA: Đang xem của mình hay của bạn?
   const friendId = route?.params?.friendId;
-  const isFriendView = !!friendId; // Nếu có friendId => true (Chế độ xem bạn bè)
+  const isFriendView = !!friendId; 
 
   const [userProfile, setUserProfile] = useState({
     name: isFriendView ? 'Đang tải...' : 'Người dùng Bambo',
@@ -22,14 +21,22 @@ const HomeScreen = ({ route, navigation }) => {
   });
 
   const [goals, setGoals] = useState([]);
+  
+  // ⚡ STATE QUẢN LÝ TRẠNG THÁI XEM ẢNH TO
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [viewerImages, setViewerImages] = useState([]);
 
-  // --- API LẤY DỮ LIỆU ---
+  // Hàm hỗ trợ mở ảnh to
+  const openImageViewer = (imageUrl) => {
+    setViewerImages([{ uri: imageUrl }]);
+    setIsViewerVisible(true);
+  };
+
   const fetchUserProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const response = await axios.get(`${BASE_URL}/users/profile`, {
-      //const response = await axios.get('http://172.31.2.204:3000/api/users/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data) {
@@ -50,7 +57,6 @@ const HomeScreen = ({ route, navigation }) => {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const response = await axios.get(`${BASE_URL}/goals`, {
-      //const response = await axios.get('http://172.31.2.204:3000/api/goals', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data) setGoals(response.data);
@@ -59,21 +65,18 @@ const HomeScreen = ({ route, navigation }) => {
     }
   };
 
-  // ⚡ API MỚI: Dành riêng để bốc dữ liệu của bạn bè
   const fetchFriendData = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const response = await axios.get(`${BASE_URL}/social/friend-profile/${friendId}`, {
-      //const response = await axios.get(`http://172.31.2.204:3000/api/social/friend-profile/${friendId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.data) {
-        // Map dữ liệu bạn bè vào state userProfile
         setUserProfile({
           name: response.data.profile.username, 
-          slogan: 'Thành viên Bambo 🎍', // Có thể cập nhật lấy slogan từ DB nếu ông có
+          slogan: 'Thành viên Bambo 🎍',
           avatar_url: response.data.profile.avatar_url,
           cover_url: response.data.profile.cover_url || null,
         });
@@ -84,12 +87,11 @@ const HomeScreen = ({ route, navigation }) => {
     }
   };
 
-  // --- USE EFFECT ĐIỀU HƯỚNG CALL API ---
   useEffect(() => {
     if (isFriendView) {
-      fetchFriendData(); // Nếu là bạn thì gọi API bạn
+      fetchFriendData(); 
     } else {
-      fetchUserProfile(); // Nếu là mình thì gọi API mình
+      fetchUserProfile(); 
       fetchGoals();
     }
 
@@ -102,11 +104,10 @@ const HomeScreen = ({ route, navigation }) => {
       }
     });
     return unsubscribe;
-  }, [navigation, isFriendView]); // Thêm isFriendView vào dependency
+  }, [navigation, isFriendView]); 
 
-  // --- XỬ LÝ ẢNH (Khóa lại nếu là bạn bè) ---
   const pickImage = async (uploadType) => {
-    if (isFriendView) return; // Bảo mật: Không cho chạy hàm nếu là bạn bè
+    if (isFriendView) return; 
 
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -132,7 +133,6 @@ const HomeScreen = ({ route, navigation }) => {
       try {
         const token = await AsyncStorage.getItem('userToken');
         const response = await axios.post(`${BASE_URL}/users/upload-image`, formData, {
-        //const response = await axios.post('http://172.31.2.204:3000/api/users/upload-image', formData, {
           headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` },
         });
 
@@ -153,27 +153,37 @@ const HomeScreen = ({ route, navigation }) => {
     }
   };
 
-  // --- RENDER GIAO DIỆN CHÍNH ---
   const renderHeader = () => {
     const defaultCover = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1000';
     const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile.name)}&background=39FF14&color=1a3317&size=150&bold=true`;
 
     return (
-      <View style={styles.headerContainer}>
-        <View style={styles.coverWrapper}>
-          <ImageBackground 
-            source={{ uri: userProfile.cover_url || defaultCover }} 
-            style={styles.coverImage}
-            imageStyle={{ borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}
+      <View>
+        <View style={styles.headerContainer}>
+          
+          <TouchableOpacity 
+            style={styles.coverWrapper}
+            activeOpacity={0.9}
+            // ⚡ CẬP NHẬT: Nhấn 1 lần -> Xem ảnh to
+            onPress={() => openImageViewer(userProfile.cover_url || defaultCover)}
+            // Nhấn giữ -> Đổi ảnh bìa
+            onLongPress={() => {
+              if (!isFriendView) {
+                Alert.alert("Ảnh bìa", "Bạn muốn thay đổi ảnh bìa?", [
+                  { text: "Hủy", style: "cancel" },
+                  { text: "Đồng ý", onPress: () => pickImage('cover') }
+                ]);
+              }
+            }}
+            delayLongPress={500}
           >
-            <View style={styles.coverOverlay}>
-              {/* ⚡ ĐIỀU KIỆN 1: Ẩn nút thay ảnh bìa và Sửa info nếu là bạn bè */}
-              {!isFriendView && (
-                <>
-                  <TouchableOpacity style={styles.btnEditCover} onPress={() => pickImage('cover')}>
-                    <Text style={styles.btnEditCoverText}>📷</Text>
-                  </TouchableOpacity>
-
+            <ImageBackground 
+              source={{ uri: userProfile.cover_url || defaultCover }} 
+              style={styles.coverImage}
+              imageStyle={{ borderBottomLeftRadius: 30, borderBottomRightRadius: 30 }}
+            >
+              <View style={styles.coverOverlay}>
+                {!isFriendView && (
                   <TouchableOpacity 
                     style={styles.btnEditInfo}
                     onPress={() => navigation.navigate('EditProfile', { 
@@ -183,66 +193,80 @@ const HomeScreen = ({ route, navigation }) => {
                   >
                     <Text style={styles.btnEditInfoText}>⚙️</Text>
                   </TouchableOpacity>
-                </>
-              )}
-            </View>
-          </ImageBackground>
-        </View>
+                )}
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
 
-        <View style={styles.profileInfoSection}>
-          <View style={styles.avatarWrapper}>
-            {/* ⚡ ĐIỀU KIỆN 2: Tắt tính năng bấm vào Avatar nếu là bạn bè */}
-            <TouchableOpacity 
-              style={styles.avatarContainer} 
-              onPress={() => pickImage('avatar')}
-              disabled={isFriendView} // Disable luôn nút bấm
-            >
-              <Image source={{ uri: userProfile.avatar_url || defaultAvatar }} style={styles.avatar} />
+          <View style={styles.profileInfoSection}>
+            <View style={styles.avatarWrapper}>
               
-              {/* ⚡ ĐIỀU KIỆN 3: Ẩn icon camera mini */}
-              {!isFriendView && (
-                <View style={styles.cameraBadgeMini}>
-                  <Text style={{ fontSize: 10, color: '#fff' }}>📷</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity 
+                style={styles.avatarContainer} 
+                // ⚡ CẬP NHẬT: Nhấn 1 lần -> Xem ảnh to
+                onPress={() => openImageViewer(userProfile.avatar_url || defaultAvatar)}
+                // Nhấn giữ -> Đổi ảnh đại diện
+                onLongPress={() => {
+                  if (!isFriendView) {
+                    Alert.alert("Ảnh đại diện", "Bạn muốn thay đổi ảnh đại diện?", [
+                      { text: "Hủy", style: "cancel" },
+                      { text: "Đồng ý", onPress: () => pickImage('avatar') }
+                    ]);
+                  }
+                }}
+                delayLongPress={500}
+              >
+                <Image source={{ uri: userProfile.avatar_url || defaultAvatar }} style={styles.avatar} />
+              </TouchableOpacity>
+              
+            </View>
 
-          <View style={styles.userTextSection}>
-            <Text style={styles.userNameText}>{userProfile.name}</Text>
-            <Text style={styles.sloganText}>{userProfile.slogan}</Text>
+            <View style={styles.userTextSection}>
+              <Text style={styles.userNameText}>{userProfile.name}</Text>
+              <Text style={styles.sloganText}>{userProfile.slogan}</Text>
+            </View>
           </View>
         </View>
 
-        {/* ⚡ ĐIỀU KIỆN 4: Thay đổi tiêu đề danh sách */}
         <Text style={styles.sectionTitle}>
           {isFriendView ? 'Mục tiêu đang cày' : 'Mục tiêu của tôi'}
         </Text>
       </View>
     );
   };
-//renderGoalCard dùng để hiển thị từng mục tiêu trong FlatList, khi bấm vào sẽ dẫn đến GoalDetail. Nếu đang xem của bạn bè thì sẽ truyền thêm biến isFriendView để khóa tính năng viết log lại.
+
   const renderGoalCard = ({ item }) => (
     <TouchableOpacity 
       style={styles.goalRow} 
       activeOpacity={0.8}
-      // ⚡ QUAN TRỌNG: Truyền isFriendView sang màn hình GoalDetail để chặn viết log
       onPress={() => {
         if (isFriendView) {
-          // 1. Nếu là BẠN BÈ: Bỏ qua cụm Tab GoalDetail, bay THẲNG vào màn hình đơn GoalTimeline
           navigation.navigate('GoalTimeline', { 
             goalId: item.goal_id, 
             goalTitle: item.title,
-            isFriendView: true // Truyền sang để ẩn nút Check-in như anh em mình làm lúc nãy
+            isFriendView: true 
           });
         } else {
-          // 2. Nếu là CHÍNH MÌNH: Vào cụm Tab GoalDetail (Overview + Timeline) như bình thường
           navigation.navigate('GoalDetail', { 
             goalId: item.goal_id, 
             goalName: item.title 
           });
         }
       }}
+      onLongPress={() => {
+        if (!isFriendView) { 
+          Alert.alert(
+            "Tùy chọn mục tiêu",
+            `Bạn muốn làm gì với mục tiêu "${item.title}"?`,
+            [
+              { text: "Hủy", style: "cancel" },
+              { text: "Chỉnh sửa mục tiêu", onPress: () => navigation.navigate('EditGoal', { goalId: item.goal_id }) }
+            ],
+            { cancelable: true } 
+          );
+        }
+      }}
+      delayLongPress={500} 
     >
       {item.cover_image_url && item.cover_image_url.startsWith('http') ? (
         <Image source={{ uri: item.cover_image_url }} style={styles.rowImage} />
@@ -254,16 +278,9 @@ const HomeScreen = ({ route, navigation }) => {
 
       <View style={styles.rowRight}>
         <Text style={styles.rowTitle} numberOfLines={1}>{item.title}</Text>
-        <Text style={styles.rowDescription} numberOfLines={1}>{item.description || 'Chưa có mô tả cho mục tiêu này...'}</Text>
-        
-        <View style={styles.rowProgressBar}>
-          <View style={[styles.rowProgressFill, { width: `${((item.progress || 0) / 30) * 100}%`, backgroundColor: item.color || '#39FF14' }]} /> 
-        </View>
-        
-        <View style={styles.rowStats}>
-          <Text style={styles.rowProgressText}>⏳ {item.progress || 0}/30 ngày</Text>
-          <Text style={styles.rowStreakText}>🔥 {item.streak || 0} ngày liên tiếp</Text>
-        </View>
+        <Text style={styles.rowDescription} numberOfLines={2}>
+          {item.description || 'Chưa có mô tả cho mục tiêu này...'}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -279,59 +296,102 @@ const HomeScreen = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
       />
       
-      {/* ⚡ ĐIỀU KIỆN 5: Ẩn nút dấu CỘNG thêm goal nếu đang ở nhà người ta */}
       {!isFriendView && (
         <TouchableOpacity style={styles.fabAdd} onPress={() => navigation.navigate('NewGoal')}>
           <Text style={styles.fabAddText}>+</Text>
         </TouchableOpacity>
       )}
+
+      {/* ⚡ COMPONENT HIỂN THỊ ẢNH TO TOÀN MÀN HÌNH */}
+      <ImageViewing
+        images={viewerImages}
+        imageIndex={0}
+        visible={isViewerVisible}
+        onRequestClose={() => setIsViewerVisible(false)} // Bấm X hoặc vuốt để đóng
+        swipeToCloseEnabled={true} // Cho phép vuốt xuống để đóng y hệt Facebook
+        doubleTapToZoomEnabled={true} // Bấm đúp để zoom
+      />
     </CustomContainer>
   );
 };
 
-// ... Khối CSS Styles giữ Y NGUYÊN không cần sửa một chữ nào
 const styles = StyleSheet.create({
-  // (Đoạn style cũ của ông giữ nguyên)
   listPadding: { paddingBottom: 100 },
   row: { justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 15 },
   headerContainer: { backgroundColor: '#fff', paddingBottom: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, marginBottom: 10 },
   coverWrapper: { height: 180, width: '100%', position: 'relative', },
   coverImage: { flex: 1, width: '100%', height: '100%', },
   coverOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, },
-  btnEditCover: { position: 'absolute', top: 20, left: 20, backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, zIndex: 10 },
-  btnEditCoverText: { fontSize: 13, color: '#1a3317', fontWeight: 'bold' },
+  
   btnEditInfo: { position: 'absolute', top: 20, right: 20, backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, zIndex: 10 },
   btnEditInfoText: { fontSize: 13, color: '#1a3317', fontWeight: 'bold' },
   profileInfoSection: { paddingHorizontal: 20, position: 'relative', flexDirection: 'row', marginTop: -10 },
-  avatarWrapper: { position: 'absolute', left: 20, top: -55, width: 90, height: 90, borderRadius: 45, borderWidth: 4, borderColor: '#fff', backgroundColor: '#fff', elevation: 5, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, zIndex: 20 },
-  avatarContainer: { width: '100%', height: '100%', borderRadius: 41 },
-  avatar: { width: '100%', height: '100%', borderRadius: 41 },
-  cameraBadgeMini: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#2d5a27', width: 26, height: 26, borderRadius: 13, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#fff', zIndex: 25 },
-  userTextSection: { flex: 1, paddingLeft: 105, paddingTop: 12 },
+  avatarWrapper: { 
+    position: 'absolute', left: 20, top: -65, 
+    width: 120, height: 120, 
+    borderRadius: 55, 
+    borderWidth: 4, borderColor: '#fff', backgroundColor: '#fff', 
+    elevation: 5, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, zIndex: 20 
+  },
+  avatarContainer: { width: '100%', height: '100%', borderRadius: 51 }, 
+  avatar: { width: '100%', height: '100%', borderRadius: 51 },
+  
+  userTextSection: { flex: 1, paddingLeft: 125, paddingTop: 12 },
   userNameText: { fontSize: 22, fontWeight: 'bold', color: '#1a3317' },
   sloganText: { fontSize: 14, color: '#666', marginTop: 3, fontStyle: 'italic' },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2d5a27', marginTop: 25, marginBottom: 15, paddingHorizontal: 20 },
-  goalCard: { backgroundColor: '#fff', width: '48%', borderRadius: 16, padding: 15, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5 },
-  goalRow: { flexDirection: 'row', backgroundColor: '#fff', marginHorizontal: 20, marginBottom: 16, borderRadius: 20, overflow: 'hidden', elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, alignItems: 'stretch', },
-  rowImage: { width: 120, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, resizeMode: 'cover', },
-  rowIconContainer: { width: 120, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, justifyContent: 'center', alignItems: 'center', },
-  rowIcon: { fontSize: 36 },
-  rowRight: { flex: 1, paddingVertical: 16, paddingHorizontal: 16, justifyContent: 'center', },
-  rowTitle: { fontSize: 18, fontWeight: 'bold', color: '#1a3317', marginBottom: 4 },
-  rowDescription: { fontSize: 14, color: '#666', marginBottom: 12 },
-  rowProgressBar: { height: 8, backgroundColor: '#E0EAE0', borderRadius: 4, marginBottom: 8, overflow: 'hidden' },
-  rowProgressFill: { height: '100%', borderRadius: 4 },
-  rowStats: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  rowProgressText: { fontSize: 12, color: '#777', fontWeight: '600' },
-  rowStreakText: { fontSize: 12, color: '#ff4500', fontWeight: 'bold' },
-  cardIconContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F0F5F0', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-  cardIcon: { fontSize: 20 },
-  cardTitle: { fontSize: 15, fontWeight: 'bold', color: '#333', marginBottom: 15, height: 40 },
-  progressBar: { height: 6, backgroundColor: '#E0EAE0', borderRadius: 3, marginBottom: 5, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#39FF14', borderRadius: 3 },
-  progressText: { fontSize: 11, color: '#888', fontWeight: '500' },
-  fabAdd: { position: 'absolute', bottom: 30, right: 20, width: 60, height: 60, borderRadius: 30, backgroundColor: '#2d5a27', justifyContent: 'center', alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 3 } },
-  fabAddText: { fontSize: 30, color: '#fff', fontWeight: 'bold', marginTop: -3 }
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2d5a27', marginTop: 22, marginBottom: 12, paddingHorizontal: 20 },
+  
+  goalRow: { 
+    flexDirection: 'row', 
+    backgroundColor: '#fff', 
+    marginHorizontal: 20, 
+    marginBottom: 16, 
+    borderRadius: 20, 
+    overflow: 'hidden', 
+    elevation: 3, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.06, 
+    shadowRadius: 8, 
+    alignItems: 'stretch', 
+    minHeight: 130 
+  },
+  rowImage: { width: 120, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, resizeMode: 'cover' },
+  rowIconContainer: { width: 120, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  rowIcon: { fontSize: 48 }, 
+  
+  rowRight: { 
+    flex: 1, 
+    paddingVertical: 16, 
+    paddingHorizontal: 16, 
+    justifyContent: 'center' 
+  },
+  rowTitle: { fontSize: 18, fontWeight: 'bold', color: '#1a3317', marginBottom: 8 }, 
+  rowDescription: { fontSize: 14, color: '#666', lineHeight: 22 }, 
+  
+  fabAdd: { 
+    position: 'absolute', 
+    bottom: 30, 
+    right: 20, 
+    width: 60, 
+    height: 60, 
+    borderRadius: 30, 
+    backgroundColor: '#F4F7F4', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    elevation: 6, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.15, 
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    borderWidth: 1, 
+    borderColor: '#E0EAE0' 
+  },
+  fabAddText: { 
+    fontSize: 34, 
+    color: '#4CAF50', 
+    fontWeight: '300', 
+    marginTop: -4 
+  }
 });
 
 export default HomeScreen;

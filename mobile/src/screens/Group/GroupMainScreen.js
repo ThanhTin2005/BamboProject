@@ -35,16 +35,16 @@ export default function GroupMainScreen({ route, navigation }) {
                 }}
             >
                 <Tab.Screen 
-                    name="Tổng quan" 
-                    component={GroupOverviewTab} 
-                    // ⚡ PHẢI CÓ DÒNG NÀY: Để ném cái groupId từ MainScreen xuống cho Tab Tổng quan dùng
-                    initialParams={{ groupId: groupId, role: group.role }} 
-                />
-                <Tab.Screen 
                     name="Timeline" 
                     component={GroupTimelineTab} 
                     options={{ title: 'Dòng thời gian' }} 
                     initialParams={{ groupId: groupId, role: group.role }} // ⚡ CHUYỀN ID VÀ ROLE SANG TAB
+                />
+                <Tab.Screen 
+                    name="Thư viện ảnh" 
+                    component={GroupOverviewTab} 
+                    // ⚡ PHẢI CÓ DÒNG NÀY: Để ném cái groupId từ MainScreen xuống cho Tab Tổng quan dùng
+                    initialParams={{ groupId: groupId, role: group.role }} 
                 />
             </Tab.Navigator>
         </View>

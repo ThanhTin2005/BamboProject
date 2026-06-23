@@ -152,33 +152,7 @@ const response = await axios.get(`${BASE_URL}/goals/${goalId}`, {//Phương th�
             )}
           </TouchableOpacity>
 
-          <Text style={styles.label}>Chọn biểu tượng</Text>
-          <View style={styles.list}>
-            {ICONS.map(icon => (
-              <TouchableOpacity
-                key={icon}
-                style={[styles.iconBox, selectedIcon === icon && { backgroundColor: selectedColor }]}
-                onPress={() => setSelectedIcon(icon)}
-              >
-                <Ionicons
-                  name={icon}
-                  size={24}
-                  color={selectedIcon === icon ? '#fff' : selectedColor}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={styles.label}>Chọn màu chủ đạo</Text>
-          <View style={styles.list}>
-            {COLORS.map(color => (
-              <TouchableOpacity
-                key={color}
-                style={[styles.colorBox, { backgroundColor: color }, selectedColor === color && styles.activeColor]}
-                onPress={() => setSelectedColor(color)}
-              />
-            ))}
-          </View>
+          
 
           {/* Công tắc Public/Private */}
           {/* Thay thế cả cụm switchContainer cũ bằng cụm này */}

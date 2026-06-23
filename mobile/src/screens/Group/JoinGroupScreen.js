@@ -65,7 +65,7 @@ export default function JoinGroupScreen({ navigation }) {
                         </View>
 
                         <TouchableOpacity style={styles.button} onPress={handleJoin} activeOpacity={0.8}>
-                            <Text style={styles.buttonText}>Tham Gia Sinh Tồn</Text>
+                            <Text style={styles.buttonText}>Tham gia nhóm</Text>
                             <Ionicons name="log-in-outline" size={20} color="#FFFFFF" style={styles.btnIconEnd} />
                         </TouchableOpacity>
                     </View>

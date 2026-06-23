@@ -76,7 +76,7 @@ const handleLogin = async () => {
         <View style={styles.inner}>
           
           <View style={styles.header}>
-            <Text style={styles.logo}>BAMBO 🎍</Text>
+            <Text style={styles.logo}>BAMBO</Text>
             <Text style={styles.tagline}>Grow your habits, step by step.</Text>
           </View>
 
@@ -84,14 +84,14 @@ const handleLogin = async () => {
             {/* Sử dụng Component MyInput đã tạo */}
             <MyInput 
               label="Username"
-              placeholder="Nhập tài khoản HUST của ông..."
+              placeholder="Nhập tài khoản "
               value={username}
               onChangeText={setUsername}
             />
 
             <MyInput 
               label="Password"
-              placeholder="Mật khẩu bí mật..."
+              placeholder="Mật khẩu"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={true}

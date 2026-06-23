@@ -5,7 +5,6 @@ import {
   StyleSheet, 
   FlatList, 
   Image, 
-  SafeAreaView, 
   ActivityIndicator,
   TouchableOpacity 
 } from 'react-native';
@@ -14,10 +13,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer';
 import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
 
-
-const GoalTimelineScreen = ({ route,navigation }) => {
+const GoalTimelineScreen = ({ route, navigation }) => {
   // Lấy ID và Tên mục tiêu từ HomeScreen truyền sang
-  const { goalId, goalName , isFriendView } = route.params || {}; // Thêm isFriendView để biết có phải đang xem timeline của bạn bè hay không
+  const { goalId, goalName, isFriendView } = route.params || {}; 
   
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,14 +25,11 @@ const GoalTimelineScreen = ({ route,navigation }) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       
-      // NHỚ THAY LẠI BẰNG ĐỊA CHỈ IP WIFI CỦA ÔNG
       const response = await axios.get(`${BASE_URL}/logs/${goalId}`, {
-      //const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       // Đổ dữ liệu thật vào biến state
-      // (Tùy thuộc vào backend Day 19 ông viết trả về response.data hay response.data.data)
       setLogs(response.data.data || response.data); 
     } catch (error) {
       console.error("Lỗi Day 21 lấy Logs:", error);
@@ -43,21 +38,17 @@ const GoalTimelineScreen = ({ route,navigation }) => {
     }
   };
 
-  // 2. Chạy hàm lấy dữ liệu ngay khi vừa mở màn hình
-  // useEffect(() => {
-  //   fetchLogs();
-  // }, [goalId]);
   useEffect(() => {
       // 1. Gọi lần đầu khi mở trang
       fetchLogs();
 
       // 2. Lắng nghe sự kiện 'focus' - mỗi khi quay lại màn hình này là tự load lại
-      const unsubscribe = navigation.addListener('focus', () => {//navigation.addListener('focus', callback) sẽ thiết lập một "thám tử" để lắng nghe sự kiện 'focus' trên
+      const unsubscribe = navigation.addListener('focus', () => {
         fetchLogs(); 
       });
 
-      return unsubscribe;// Dọn dẹp thám tử khi không dùng nữa
-  }, [navigation, goalId]); // Thêm navigation và goalId vào mảng phụ thuộc
+      return unsubscribe; // Dọn dẹp thám tử khi không dùng nữa
+  }, [navigation, goalId]); 
 
   // 3. Hàm vẽ từng cái "mầm tre" lên Timeline
   const renderLogItem = ({ item, index }) => {
@@ -125,11 +116,6 @@ const GoalTimelineScreen = ({ route,navigation }) => {
 
   return (
     <CustomContainer>
-      <View style={styles.header}>
-        <Text style={styles.goalTitle}>{goalName}</Text>
-        <Text style={styles.subTitle}>Hành trình của mầm tre 🎍</Text>
-      </View>
-
       {loading ? (
         <ActivityIndicator size="large" color="#2d5a27" style={{ marginTop: 50 }} />
       ) : (
@@ -145,25 +131,32 @@ const GoalTimelineScreen = ({ route,navigation }) => {
           }
         />
       )}
+
+      {/* ⚡ NÚT CHECK-IN "MẦM SỐNG" SÁNG TẠO ⚡ */}
       {!isFriendView && (
         <TouchableOpacity
-          style={styles.fabCheckIn}
+          activeOpacity={0.8}
+          style={styles.creativeFabWrapper}
           onPress={() => navigation.navigate('CreateLog', { goalId: goalId })}
         >
-          <Text style={styles.fabText}>Check-in Hôm nay</Text>
+          <View style={styles.creativeFabMain}>
+            {/* Vẽ dấu + bằng CSS cho sắc nét */}
+            <View style={styles.fabIconVertical} />
+            <View style={styles.fabIconHorizontal} />
+          </View>
         </TouchableOpacity>
       )}
     </CustomContainer>
   );
 };
 
-// CSS giữ nguyên bản sắc
+// CSS 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAF8' },
   header: { padding: 20, paddingTop: 40, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#eee' },
   goalTitle: { fontSize: 24, fontWeight: 'bold', color: '#2d5a27' },
   subTitle: { color: '#666', marginTop: 5 },
-  listPadding: { padding: 20, paddingBottom: 50 },
+  listPadding: { padding: 20, paddingBottom: 100 }, // Tăng padding bottom để không bị nút đè lên bài cuối cùng
   logContainer: { flexDirection: 'row', marginBottom: 0 },
   timelineLeft: { alignItems: 'center', width: 20, marginRight: 15 },
   dot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#2d5a27', zIndex: 1 },
@@ -176,25 +169,44 @@ const styles = StyleSheet.create({
   logCaption: { fontSize: 16, color: '#333', lineHeight: 22 },
   logMood: { fontSize: 12, color: '#2d5a27', marginTop: 8, fontStyle: 'italic' },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#999', fontStyle: 'italic', paddingHorizontal: 20 },
-  fabCheckIn: {
+  
+  // ⚡ CSS NÚT CHECK-IN MỚI SÁNG TẠO ⚡
+  creativeFabWrapper: {
     position: 'absolute',
-    bottom: 30,
-    right: 20,
-    left: 20, // Kéo dài ra 2 bên
-    backgroundColor: '#2d5a27',
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    bottom: 35,
+    alignSelf: 'center',
+    // ❌ Tuyệt đối không để shadow ở đây để tránh lỗi bóng hình vuông
   },
-  fabText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  creativeFabMain: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,           // Bo tròn tuyệt đối
+    backgroundColor: '#2d5a27', // Xanh lá chủ đạo
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#E8F5E9',     // Viền xanh lá cực nhạt tạo điểm nhấn
+    
+    // ✅ Bỏ shadow vào đúng cái hình tròn này
+    elevation: 12,              // Cho Android
+    shadowColor: '#2d5a27',     // Đổ bóng MÀU XANH LÁ tạo hiệu ứng phát sáng (Glow)
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
+  fabIconVertical: {
+    position: 'absolute',
+    width: 4,
+    height: 30,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
+  },
+  fabIconHorizontal: {
+    position: 'absolute',
+    width: 30,
+    height: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
   },
   
   // Dành cho AI sau này
@@ -211,21 +223,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center', 
-    marginTop: 15,          // Đẩy cách phần nội dung nhật ký ở trên xuống 15px
-    borderTopWidth: 1,      // ⚡ Đường kẻ mờ đây rồi
-    borderColor: '#E0E0E0', // ⚡ Đổi sang màu này đậm hơn #F0F0F0 một tí cho dễ nhìn
-    
-    // ⚡ VIẾT TƯỜNG MINH ĐỂ TRỊ LỖI MẤT VIỀN:
-    paddingTop: 12,         // Khoảng cách từ đường kẻ đẩy xuống Avatar
-    paddingBottom: 12,      // Khoảng cách từ Avatar đẩy xuống mép đáy Card
+    marginTop: 15,          
+    borderTopWidth: 1,      
+    borderColor: '#E0E0E0', 
+    paddingTop: 12,         
+    paddingBottom: 12,      
   },
   avatarCircle: {
-    width: 36, // ⚡ TĂNG MẠNH (từ 26 lên 36)
-    height: 36, // ⚡ TĂNG MẠNH (từ 26 lên 36)
-    borderRadius: 18, // ⚡ (36 / 2)
+    width: 36, 
+    height: 36, 
+    borderRadius: 18, 
     borderWidth: 2,
-    borderColor: '#FFF', // ⚡ Viền trắng dầy lên nhìn nó mới tách bạch
-    marginLeft: -12, // ⚡ Tăng độ xếp chồng âm (từ -8 lên -12) cho nó khít
+    borderColor: '#FFF', 
+    marginLeft: -12, 
     backgroundColor: '#E0E0E0',
   },
   moreCircle: {
@@ -234,14 +244,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   moreText: {
-    fontSize: 12, // ⚡ TĂNG (từ 10 lên 12) cho dễ đọc
+    fontSize: 12, 
     fontWeight: 'bold',
     color: '#888',
-    marginBottom: 4, // ⚡ Căn chỉnh lại cho chữ "..." nằm giữa vòng tròn
+    marginBottom: 4, 
   },
   bumpIconTiny: {
-    fontSize: 20, // ⚡ TĂNG MẠNH (từ 16 lên 20) cho nó hoành tráng
-    marginLeft: -6, // ⚡ Tăng khoảng cách so với avatar (từ 8 lên 12)
+    fontSize: 20, 
+    marginLeft: -6, 
     opacity: 0.9,
   }
 });

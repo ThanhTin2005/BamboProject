@@ -1,15 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { 
-  View, Text, StyleSheet, TouchableOpacity, 
-  ActivityIndicator, FlatList, Alert 
+  View, Text, StyleSheet, ActivityIndicator, Alert 
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+import { Calendar } from 'react-native-calendars'; 
+import { BASE_URL } from '../config';
 
-
-// Hàm hỗ trợ format ngày chuẩn YYYY-MM-DD để dễ so sánh
 const formatDate = (dateObj) => {
   let month = '' + (dateObj.getMonth() + 1);
   let day = '' + dateObj.getDate();
@@ -20,120 +18,123 @@ const formatDate = (dateObj) => {
 };
 
 const GoalOverviewScreen = ({ route, navigation }) => {
-  // Lấy dữ liệu từ file Tabs truyền xuống
   const { goalId, goalName } = route.params; 
   
-  const [gridData, setGridData] = useState([]);
+  const [markedDates, setMarkedDates] = useState({});
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalLogs: 0, currentStreak: 0 });
+  
+  // ⚡ SỬA LỖI 1: Dùng useRef thay vì useState để thoát khỏi bẫy Stale Closure
+  const isFirstLoad = useRef(true);
 
-  // THUẬT TOÁN DAY 23: Lấy dữ liệu và tạo bảng lưới
   const fetchAndProcessData = async () => {
     try {
-      setLoading(true);
+      if (isFirstLoad.current) {
+        setLoading(true);
+      }
+      
       const token = await AsyncStorage.getItem('userToken');
-      // Đảm bảo IP chuẩn của ông
-      const response = await axios.get(`${BASE_URL}/logs/${goalId}`, {
-      //const response = await axios.get(`http://172.31.2.204:3000/api/logs/${goalId}`, {
+      
+      // ⚡ SỬA LỖI 2: Thêm "?t=..." để đập tan bộ nhớ Cache của điện thoại, ép lấy data mới nhất
+      const timestamp = new Date().getTime();
+      const response = await axios.get(`${BASE_URL}/logs/${goalId}?t=${timestamp}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       const logs = response.data.data || response.data;
       
-      // 1. Tạo một "Rổ" chứa các ngày ĐÃ CHECK-IN (chỉ lấy phần YYYY-MM-DD)
-      const loggedDates = new Set(
-        logs.map(log => log.created_at.split('T')[0])
-      );
+      // 1. Lọc ra danh sách các ngày đã check-in (Đã fix lệch múi giờ UTC -> Local)
+      const loggedDatesSet = new Set(logs.map(log => {
+        // Biến chuỗi thời gian của Server thành Object Date theo múi giờ điện thoại (VN)
+        const localDate = new Date(log.created_at);
+        // Dùng luôn hàm formatDate ông viết ở trên để lấy ra chuẩn YYYY-MM-DD
+        return formatDate(localDate); 
+      }));
+      
+      let marks = {};
+      loggedDatesSet.forEach(date => {
+        marks[date] = {
+          customStyles: {
+            container: { 
+              backgroundColor: '#39FF14', 
+              elevation: 2, 
+              shadowColor: '#39FF14', 
+              shadowOpacity: 0.4, 
+              shadowRadius: 4, 
+              shadowOffset: { width: 0, height: 2 }, 
+              borderRadius: 8 
+            },
+            text: { color: '#000', fontWeight: 'bold' }
+          }
+        };
+      });
 
-      // 2. Tạo mảng 30 ngày gần nhất
-      const daysArray = [];
       const todayString = formatDate(new Date());
+      if (!marks[todayString]) {
+        marks[todayString] = {
+          customStyles: {
+            container: { borderWidth: 2, borderColor: '#2d5a27', borderRadius: 8 },
+            text: { color: '#2d5a27', fontWeight: 'bold' }
+          }
+        };
+      }
+
       let streakCount = 0;
-      let isStreakBroken = false;
+      let checkDate = new Date();
+      const hasToday = loggedDatesSet.has(todayString);
+      
+      if (!hasToday) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
 
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateString = formatDate(d);
-        
-        // 3. So khớp: Ngày này có nằm trong "Rổ" đã check-in không?
-        const isCompleted = loggedDates.has(dateString);
-        
-        daysArray.push({
-          id: dateString,
-          date: dateString,
-          displayDate: d.getDate(), // Lấy ngày mùng mấy để hiển thị
-          isCompleted: isCompleted,
-          isToday: dateString === todayString
-        });
-
-        // (Bonus) Tính toán Streak lùi từ hôm nay
-        if (i === 0 && !isCompleted) {
-          // Hôm nay chưa làm thì chưa gãy streak (còn thời gian trong ngày)
-        } else if (isCompleted && !isStreakBroken) {
+      while (true) {
+        const dateStr = formatDate(checkDate);
+        if (loggedDatesSet.has(dateStr)) {
           streakCount++;
+          checkDate.setDate(checkDate.getDate() - 1);
         } else {
-          isStreakBroken = true; // Hụt 1 ngày là gãy
+          break;
         }
       }
 
-      setGridData(daysArray);
+      setMarkedDates({ ...marks });
       setStats({ totalLogs: logs.length, currentStreak: streakCount });
+      
+      // Đánh dấu đã tải xong lần đầu
+      isFirstLoad.current = false;
 
     } catch (error) {
-      console.error("Lỗi lấy dữ liệu Grid:", error);
+      console.error("Lỗi lấy dữ liệu Lịch:", error);
     } finally {
+      // ⚡ Tắt loading (Vì loading đang false sẵn ở các lần sau nên gọi hàm này cũng không gây giật màn hình)
       setLoading(false);
     }
   };
 
-  // Dùng useFocusEffect để tự động gọi lại API mỗi khi ông từ màn Check-in quay về
   useFocusEffect(
     useCallback(() => {
       fetchAndProcessData();
     }, [goalId])
   );
 
-  // Xử lý sự kiện khi bấm vào ô vuông
-  const handlePressSquare = (item) => {
-    if (item.isCompleted) {
+  const handleDayPress = (day) => {
+    const todayString = formatDate(new Date());
+
+    if (markedDates[day.dateString] && markedDates[day.dateString].customStyles?.container?.backgroundColor === '#39FF14') {
       Alert.alert("Tuyệt vời!", "Ngày này ông đã gieo mầm rồi 🌱");
       return;
     }
     
-    if (!item.isToday) {
+    if (day.dateString !== todayString) {
       Alert.alert("Kỷ luật thép!", "Không thể check-in bù cho quá khứ. Hãy tập trung vào hôm nay!");
       return;
     }
 
-    // Đúng là hôm nay và chưa làm -> Chuyển sang màn Check-in
     navigation.navigate('CreateLog', { goalId, goalName });
-  };
-
-  // DAY 24: Vẽ giao diện từng ô vuông
-  const renderSquare = ({ item }) => {
-    return (
-      <TouchableOpacity 
-        style={[
-          styles.square,
-          item.isCompleted ? styles.squareCompleted : styles.squareEmpty,
-          item.isToday && !item.isCompleted ? styles.squareToday : null
-        ]}
-        activeOpacity={0.7}
-        onPress={() => handlePressSquare(item)}
-      >
-        {item.isCompleted ? (
-          <Text style={styles.iconText}>🎍</Text>
-        ) : (
-          <Text style={styles.dateText}>{item.displayDate}</Text>
-        )}
-      </TouchableOpacity>
-    );
   };
 
   return (
     <View style={styles.container}>
-      {/* Header Thông số */}
       <View style={styles.statsCard}>
         <View style={styles.statBox}>
           <Text style={styles.statValue}>{stats.currentStreak} 🔥</Text>
@@ -146,27 +147,39 @@ const GoalOverviewScreen = ({ route, navigation }) => {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Bức tranh Kỷ luật (30 ngày)</Text>
+      <Text style={styles.sectionTitle}>Hành trình Gieo mầm</Text>
 
-      {/* Bảng lưới */}
       {loading ? (
         <ActivityIndicator size="large" color="#39FF14" style={{ marginTop: 50 }} />
       ) : (
-        <View style={styles.gridContainer}>
-          <FlatList
-            data={gridData}
-            renderItem={renderSquare}
-            keyExtractor={(item) => item.id}
-            numColumns={6} // Tự động dàn thành 6 cột
-            columnWrapperStyle={styles.row}
-            scrollEnabled={false} // Khóa cuộn vì 30 ô nằm vừa in
+        <View style={styles.calendarWrapper}>
+          <Calendar
+            key={`calendar-${stats.totalLogs}`} // ⚡ CHÌA KHÓA VÀNG: Ép Lịch vẽ lại khi tổng số mầm tăng lên
+            markingType={'custom'}
+            markedDates={markedDates}
+            onDayPress={handleDayPress}
+            theme={{
+              backgroundColor: '#ffffff',
+              calendarBackground: '#ffffff',
+              textSectionTitleColor: '#b6c1cd',
+              selectedDayBackgroundColor: '#39FF14',
+              selectedDayTextColor: '#ffffff',
+              todayTextColor: '#2d5a27',
+              dayTextColor: '#2d4150',
+              textDisabledColor: '#d9e1e8',
+              arrowColor: '#2d5a27',
+              monthTextColor: '#2d5a27',
+              textMonthFontWeight: 'bold',
+              textDayFontSize: 14,
+              textMonthFontSize: 16,
+              textDayHeaderFontSize: 13
+            }}
           />
         </View>
       )}
 
-      {/* Hướng dẫn nhỏ */}
       <Text style={styles.hintText}>
-        *Bấm vào ô của ngày hôm nay (viền xanh) để gieo mầm
+        Bấm vào ô của ngày hôm nay để check-in
       </Text>
     </View>
   );
@@ -175,7 +188,6 @@ const GoalOverviewScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAF8', padding: 20 },
   
-  // Stats
   statsCard: {
     flexDirection: 'row', backgroundColor: '#fff', borderRadius: 15,
     padding: 20, marginBottom: 25,
@@ -186,36 +198,18 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 24, fontWeight: 'bold', color: '#333' },
   statLabel: { fontSize: 13, color: '#888', marginTop: 4 },
   
-  // Grid
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2d5a27', marginBottom: 15 },
-  gridContainer: { alignItems: 'center' },
-  row: { justifyContent: 'flex-start', width: '100%', marginBottom: 10 },
   
-  // Squares
-  square: {
-    width: '14.5%', // Chừa chút khoảng trống giữa 6 cột
-    aspectRatio: 1, // Hình vuông tuyệt đối
-    marginRight: '2%',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  squareEmpty: {
-    backgroundColor: '#EAEAEA',
-  },
-  squareCompleted: {
-    backgroundColor: '#39FF14', // Xanh Neon rực rỡ
-    elevation: 2, shadowColor: '#39FF14', shadowOpacity: 0.4, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }
-  },
-  squareToday: {
-    borderWidth: 2,
-    borderColor: '#2d5a27', // Viền xanh đậm nhấn mạnh ngày hôm nay
+  calendarWrapper: {
+    borderRadius: 15,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
     backgroundColor: '#fff',
+    paddingBottom: 10,
   },
-  
-  // Texts inside squares
-  iconText: { fontSize: 16 },
-  dateText: { fontSize: 12, color: '#999', fontWeight: 'bold' },
   
   hintText: { textAlign: 'center', color: '#888', fontStyle: 'italic', marginTop: 30, fontSize: 13 }
 });
