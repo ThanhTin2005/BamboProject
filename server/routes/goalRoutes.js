@@ -22,4 +22,5 @@ router.get("/", authenticateToken, goalController.getGoals);
 router.put("/:goalId", authenticateToken, uploadCloud.single("image"), goalController.updateGoal);
 router.get("/:goalId", authenticateToken, goalController.getGoalById); // Thêm route lấy chi tiết Goal theo ID
 //hai cái get không cần uploadCloud.single() vì chỉ lấy dữ liệu thôi, không có upload ảnh nào cả
+router.delete('/:goalId', authenticateToken, goalController.deletePersonalGoal);
 module.exports = router;

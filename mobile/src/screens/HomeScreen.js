@@ -5,7 +5,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomContainer from '../components/customContainer'; 
 import { BASE_URL } from '../config'; 
-// ⚡ IMPORT THƯ VIỆN XEM ẢNH FULL MÀN HÌNH
 import ImageViewing from 'react-native-image-viewing';
 
 const HomeScreen = ({ route, navigation }) => {
@@ -21,12 +20,9 @@ const HomeScreen = ({ route, navigation }) => {
   });
 
   const [goals, setGoals] = useState([]);
-  
-  // ⚡ STATE QUẢN LÝ TRẠNG THÁI XEM ẢNH TO
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [viewerImages, setViewerImages] = useState([]);
 
-  // Hàm hỗ trợ mở ảnh to
   const openImageViewer = (imageUrl) => {
     setViewerImages([{ uri: imageUrl }]);
     setIsViewerVisible(true);
@@ -106,9 +102,36 @@ const HomeScreen = ({ route, navigation }) => {
     return unsubscribe;
   }, [navigation, isFriendView]); 
 
+  // ⚡ THÊM HÀM XÓA GOAL CÁ NHÂN
+  const confirmDeleteGoal = (goalId) => {
+    Alert.alert(
+      "Xác nhận xóa",
+      "Bạn có chắc chắn muốn xóa mục tiêu này không? Mọi minh chứng bên trong sẽ biến mất.",
+      [
+        { text: "Hủy", style: "cancel" },
+        { 
+          text: "Xóa mục tiêu", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('userToken');
+              await axios.delete(`${BASE_URL}/goals/${goalId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              Alert.alert("Thành công", "Đã xóa mục tiêu!");
+              fetchGoals(); // Tải lại danh sách sau khi xóa
+            } catch (error) {
+              console.error("Lỗi xóa goal:", error);
+              Alert.alert("Lỗi", "Không thể xóa mục tiêu lúc này.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const pickImage = async (uploadType) => {
     if (isFriendView) return; 
-
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -144,11 +167,11 @@ const HomeScreen = ({ route, navigation }) => {
               ...prev,
               [uploadType === 'avatar' ? 'avatar_url' : 'cover_url']: newImgUrl
             }));
-            alert('Cập nhật ảnh thành công! 🎉');
+            Alert.alert('Thành công', 'Cập nhật ảnh thành công! 🎉');
           }
         }
       } catch (error) {
-        alert('Đã có lỗi xảy ra khi tải ảnh lên server.');
+        Alert.alert('Lỗi', 'Đã có lỗi xảy ra khi tải ảnh lên server.');
       }
     }
   };
@@ -160,13 +183,10 @@ const HomeScreen = ({ route, navigation }) => {
     return (
       <View>
         <View style={styles.headerContainer}>
-          
           <TouchableOpacity 
             style={styles.coverWrapper}
             activeOpacity={0.9}
-            // ⚡ CẬP NHẬT: Nhấn 1 lần -> Xem ảnh to
             onPress={() => openImageViewer(userProfile.cover_url || defaultCover)}
-            // Nhấn giữ -> Đổi ảnh bìa
             onLongPress={() => {
               if (!isFriendView) {
                 Alert.alert("Ảnh bìa", "Bạn muốn thay đổi ảnh bìa?", [
@@ -200,12 +220,9 @@ const HomeScreen = ({ route, navigation }) => {
 
           <View style={styles.profileInfoSection}>
             <View style={styles.avatarWrapper}>
-              
               <TouchableOpacity 
                 style={styles.avatarContainer} 
-                // ⚡ CẬP NHẬT: Nhấn 1 lần -> Xem ảnh to
                 onPress={() => openImageViewer(userProfile.avatar_url || defaultAvatar)}
-                // Nhấn giữ -> Đổi ảnh đại diện
                 onLongPress={() => {
                   if (!isFriendView) {
                     Alert.alert("Ảnh đại diện", "Bạn muốn thay đổi ảnh đại diện?", [
@@ -218,7 +235,6 @@ const HomeScreen = ({ route, navigation }) => {
               >
                 <Image source={{ uri: userProfile.avatar_url || defaultAvatar }} style={styles.avatar} />
               </TouchableOpacity>
-              
             </View>
 
             <View style={styles.userTextSection}>
@@ -253,6 +269,7 @@ const HomeScreen = ({ route, navigation }) => {
           });
         }
       }}
+      // ⚡ CẬP NHẬT: Nhấn giữ hiện menu Sửa / Xóa
       onLongPress={() => {
         if (!isFriendView) { 
           Alert.alert(
@@ -260,7 +277,8 @@ const HomeScreen = ({ route, navigation }) => {
             `Bạn muốn làm gì với mục tiêu "${item.title}"?`,
             [
               { text: "Hủy", style: "cancel" },
-              { text: "Chỉnh sửa mục tiêu", onPress: () => navigation.navigate('EditGoal', { goalId: item.goal_id }) }
+              { text: "Chỉnh sửa mục tiêu", onPress: () => navigation.navigate('EditGoal', { goalId: item.goal_id }) },
+              { text: "Xóa mục tiêu", style: "destructive", onPress: () => confirmDeleteGoal(item.goal_id) }
             ],
             { cancelable: true } 
           );
@@ -302,14 +320,13 @@ const HomeScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       )}
 
-      {/* ⚡ COMPONENT HIỂN THỊ ẢNH TO TOÀN MÀN HÌNH */}
       <ImageViewing
         images={viewerImages}
         imageIndex={0}
         visible={isViewerVisible}
-        onRequestClose={() => setIsViewerVisible(false)} // Bấm X hoặc vuốt để đóng
-        swipeToCloseEnabled={true} // Cho phép vuốt xuống để đóng y hệt Facebook
-        doubleTapToZoomEnabled={true} // Bấm đúp để zoom
+        onRequestClose={() => setIsViewerVisible(false)} 
+        swipeToCloseEnabled={true} 
+        doubleTapToZoomEnabled={true} 
       />
     </CustomContainer>
   );
@@ -322,76 +339,25 @@ const styles = StyleSheet.create({
   coverWrapper: { height: 180, width: '100%', position: 'relative', },
   coverImage: { flex: 1, width: '100%', height: '100%', },
   coverOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, },
-  
   btnEditInfo: { position: 'absolute', top: 20, right: 20, backgroundColor: 'rgba(255,255,255,0.8)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, zIndex: 10 },
   btnEditInfoText: { fontSize: 13, color: '#1a3317', fontWeight: 'bold' },
   profileInfoSection: { paddingHorizontal: 20, position: 'relative', flexDirection: 'row', marginTop: -10 },
-  avatarWrapper: { 
-    position: 'absolute', left: 20, top: -65, 
-    width: 120, height: 120, 
-    borderRadius: 55, 
-    borderWidth: 4, borderColor: '#fff', backgroundColor: '#fff', 
-    elevation: 5, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, zIndex: 20 
-  },
+  avatarWrapper: { position: 'absolute', left: 20, top: -65, width: 120, height: 120, borderRadius: 55, borderWidth: 4, borderColor: '#fff', backgroundColor: '#fff', elevation: 5, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, zIndex: 20 },
   avatarContainer: { width: '100%', height: '100%', borderRadius: 51 }, 
   avatar: { width: '100%', height: '100%', borderRadius: 51 },
-  
   userTextSection: { flex: 1, paddingLeft: 125, paddingTop: 12 },
   userNameText: { fontSize: 22, fontWeight: 'bold', color: '#1a3317' },
   sloganText: { fontSize: 14, color: '#666', marginTop: 3, fontStyle: 'italic' },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2d5a27', marginTop: 22, marginBottom: 12, paddingHorizontal: 20 },
-  
-  goalRow: { 
-    flexDirection: 'row', 
-    backgroundColor: '#fff', 
-    marginHorizontal: 20, 
-    marginBottom: 16, 
-    borderRadius: 20, 
-    overflow: 'hidden', 
-    elevation: 3, 
-    shadowColor: '#000', 
-    shadowOpacity: 0.06, 
-    shadowRadius: 8, 
-    alignItems: 'stretch', 
-    minHeight: 130 
-  },
+  goalRow: { flexDirection: 'row', backgroundColor: '#fff', marginHorizontal: 20, marginBottom: 16, borderRadius: 20, overflow: 'hidden', elevation: 3, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, alignItems: 'stretch', minHeight: 130 },
   rowImage: { width: 120, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, resizeMode: 'cover' },
   rowIconContainer: { width: 120, borderTopLeftRadius: 20, borderBottomLeftRadius: 20, justifyContent: 'center', alignItems: 'center' },
   rowIcon: { fontSize: 48 }, 
-  
-  rowRight: { 
-    flex: 1, 
-    paddingVertical: 16, 
-    paddingHorizontal: 16, 
-    justifyContent: 'center' 
-  },
+  rowRight: { flex: 1, paddingVertical: 16, paddingHorizontal: 16, justifyContent: 'center' },
   rowTitle: { fontSize: 18, fontWeight: 'bold', color: '#1a3317', marginBottom: 8 }, 
   rowDescription: { fontSize: 14, color: '#666', lineHeight: 22 }, 
-  
-  fabAdd: { 
-    position: 'absolute', 
-    bottom: 30, 
-    right: 20, 
-    width: 60, 
-    height: 60, 
-    borderRadius: 30, 
-    backgroundColor: '#F4F7F4', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    elevation: 6, 
-    shadowColor: '#000', 
-    shadowOpacity: 0.15, 
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    borderWidth: 1, 
-    borderColor: '#E0EAE0' 
-  },
-  fabAddText: { 
-    fontSize: 34, 
-    color: '#4CAF50', 
-    fontWeight: '300', 
-    marginTop: -4 
-  }
+  fabAdd: { position: 'absolute', bottom: 30, right: 20, width: 60, height: 60, borderRadius: 30, backgroundColor: '#F4F7F4', justifyContent: 'center', alignItems: 'center', elevation: 6, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, borderWidth: 1, borderColor: '#E0EAE0' },
+  fabAddText: { fontSize: 34, color: '#4CAF50', fontWeight: '300', marginTop: -4 }
 });
 
 export default HomeScreen;

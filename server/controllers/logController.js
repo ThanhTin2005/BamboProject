@@ -61,3 +61,24 @@ exports.getLogsByGoal = async (req, res) => {
         res.status(500).json({ error: "Không lấy được nhật ký rồi Tín ơi!" });
     }
 };
+exports.deleteLog = async (req, res) => {
+    try {
+        const { logId } = req.params;
+        const userId = req.user.id; // Lấy từ Token JWT để chặn đứa khác xóa trộm
+
+        // Câu lệnh "chốt hạ": Xóa log với điều kiện phải đúng ID bài viết VÀ đúng ID người tạo
+        const [result] = await db.query(
+            'DELETE FROM logs WHERE log_id = ? AND user_id = ?', 
+            [logId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(403).json({ message: "Minh chứng không tồn tại hoặc ông không có quyền xóa." });
+        }
+
+        res.json({ message: "Đã thu hồi minh chứng thành công." });
+    } catch (error) {
+        console.error("Lỗi xóa log:", error);
+        res.status(500).json({ message: "Lỗi hệ thống khi xóa log." });
+    }
+};

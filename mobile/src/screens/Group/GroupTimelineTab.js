@@ -7,25 +7,31 @@ import { Ionicons } from '@expo/vector-icons';
 import { BASE_URL } from '../../config';
 
 export default function GroupTimelineTab({ route }) {
-    // ⚡ Lấy role từ GroupMainScreen truyền sang để biết có phải Leader không
     const { groupId, role } = route.params; 
     const navigation = useNavigation();
     const isFocused = useIsFocused();
 
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
-    
-    // State cho Thanh Lọc
-    const [filter, setFilter] = useState('all'); // 'all', 'pending', 'verified', 'rejected'
-
-    // State cho Modal Duyệt Bài của Leader
+    const [filter, setFilter] = useState('all'); 
     const [reviewModalVisible, setReviewModalVisible] = useState(false);
     const [selectedLogId, setSelectedLogId] = useState(null);
     const [isReviewing, setIsReviewing] = useState(false);
+    
+    // ⚡ STATE LƯU ID CỦA NGƯỜI DÙNG ĐANG ĐĂNG NHẬP
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     const fetchTimeline = async () => {
         try {
             const token = await AsyncStorage.getItem('userToken');
+            
+            // ⚡ Lấy User ID từ AsyncStorage (Hồi Login ông có lưu cái object 'user')
+            const userStr = await AsyncStorage.getItem('user');
+            if (userStr) {
+                const userObj = JSON.parse(userStr);
+                setCurrentUserId(userObj.id);
+            }
+
             const response = await axios.get(`${BASE_URL}/groups/${groupId}/timeline`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -41,7 +47,6 @@ export default function GroupTimelineTab({ route }) {
         if (isFocused) fetchTimeline();
     }, [isFocused]);
 
-    // ⚡ HÀM DUYỆT BÀI CHO LEADER
     const handleReview = async (newStatus) => {
         setIsReviewing(true);
         try {
@@ -50,19 +55,43 @@ export default function GroupTimelineTab({ route }) {
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
-            // Cập nhật lại UI ngay lập tức (Không xóa bài, chỉ đổi trạng thái)
             setLogs(currentLogs => currentLogs.map(log => 
                 log.log_id === selectedLogId ? { ...log, status: newStatus } : log
             ));
-            
             setReviewModalVisible(false);
         } catch (error) {
             Alert.alert("Lỗi", "Không thể duyệt bài lúc này!");
-            console.error(error);
         } finally {
             setIsReviewing(false);
         }
+    };
+
+    // ⚡ HÀM XÓA LOG NHÓM BẬT LÊN KHI BẤM 3 CHẤM
+    const handleLogOptions = (logId) => {
+        Alert.alert(
+            "Tùy chọn",
+            "Xoá minh chứng. (Không thể hoàn tác)",
+            [
+                { text: "Hủy", style: "cancel" },
+                { 
+                    text: "Xoá", 
+                    style: "destructive", 
+                    onPress: async () => {
+                        try {
+                            const token = await AsyncStorage.getItem('userToken');
+                            await axios.delete(`${BASE_URL}/logs/${logId}`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                            fetchTimeline(); // Xóa xong reload lại ngay
+                            
+                        } catch (error) {
+                            Alert.alert("Lỗi", "Không thể thu hồi minh chứng.");
+                        }
+                    }
+                }
+            ],
+            { cancelable: true }
+        );
     };
 
     const renderStatusBadge = (status) => {
@@ -75,14 +104,12 @@ export default function GroupTimelineTab({ route }) {
         }
     };
 
-    // ⚡ LOGIC LỌC BÀI VIẾT
     const filteredLogs = filter === 'all' ? logs : logs.filter(log => log.status === filter);
 
     const renderLogItem = ({ item }) => (
         <TouchableOpacity 
-            activeOpacity={1} // Tắt hiệu ứng mờ khi bấm nhẹ để nhường chỗ cho Nút bên dưới
+            activeOpacity={1} 
             onLongPress={() => {
-                // Chỉ Leader mới được bật bảng Duyệt khi nhấn giữ
                 if (role === 'leader') {
                     setSelectedLogId(item.log_id);
                     setReviewModalVisible(true);
@@ -90,23 +117,30 @@ export default function GroupTimelineTab({ route }) {
             }}
         >
             <View style={styles.card}>
-                {/* HEADER */}
                 <View style={styles.cardHeader}>
                     <Image source={{ uri: item.avatar_url || 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }} style={styles.avatar} />
                     <View style={styles.userInfo}>
                         <Text style={styles.userName}>{item.username || 'Đồng đội'}</Text>
                         <Text style={styles.timeText}>{new Date(item.created_at).toLocaleString('vi-VN')}</Text>
                     </View>
+                    
                     {renderStatusBadge(item.status)}
+
+                    {/* ⚡ NÚT 3 CHẤM NẰM NGAY CẠNH TRẠNG THÁI (CHỈ HIỆN KHI LÀ BÀI CỦA MÌNH) */}
+                    {String(item.user_id) === String(currentUserId) && currentUserId != null && (                        <TouchableOpacity 
+                            style={{ padding: 5, marginLeft: 5 }} 
+                            onPress={() => handleLogOptions(item.log_id)}
+                        >
+                            <Ionicons name="ellipsis-vertical" size={20} color="#999" />
+                        </TouchableOpacity>
+                    )}
                 </View>
                 
-                {/* BODY (ẢNH + CAPTION) */}
                 <Image source={{ uri: item.image_url }} style={styles.logImage} />
                 <View style={styles.cardBody}>
                     <Text style={styles.caption}><Text style={styles.mood}>{item.mood} </Text>{item.caption}</Text>
                 </View>
 
-                {/* FOOTER (NÚT TƯƠNG TÁC Y HỆT BẢNG TIN CÁ NHÂN) */}
                 <View style={styles.cardFooter}>
                     <View style={styles.interactionBar}>
                         <TouchableOpacity style={styles.actionBtnUI} activeOpacity={0.6}>
@@ -125,7 +159,6 @@ export default function GroupTimelineTab({ route }) {
 
     return (
         <View style={styles.container}>
-            {/* ⚡ THANH LỌC (FILTER BAR) */}
             <View style={styles.filterContainer}>
                 <TouchableOpacity onPress={() => setFilter('all')} style={[styles.filterChip, filter === 'all' && styles.filterChipActive]}>
                     <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>Tất cả</Text>
@@ -150,13 +183,10 @@ export default function GroupTimelineTab({ route }) {
                 ListEmptyComponent={<Text style={styles.emptyText}>Không có minh chứng nào ở mục này.</Text>}
             />
 
-            {/* NÚT FAB NỘP BÀI */}
             <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateGroupLog', { groupId })}>
-                
                 <Text style={styles.fabText}> Nộp minh chứng</Text>
             </TouchableOpacity>
 
-            {/* ⚡ MODAL QUYỀN LỰC CỦA LEADER */}
             <Modal visible={reviewModalVisible} transparent={true} animationType="fade" onRequestClose={() => setReviewModalVisible(false)}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
@@ -167,7 +197,6 @@ export default function GroupTimelineTab({ route }) {
                             <TouchableOpacity style={[styles.reviewBtn, { backgroundColor: '#F44336' }]} onPress={() => handleReview('rejected')} disabled={isReviewing}>
                                 <Text style={styles.reviewBtnText}>❌ Từ chối</Text>
                             </TouchableOpacity>
-
                             <TouchableOpacity style={[styles.reviewBtn, { backgroundColor: '#4CAF50' }]} onPress={() => handleReview('verified')} disabled={isReviewing}>
                                 <Text style={styles.reviewBtnText}>✅ Duyệt hợp lệ</Text>
                             </TouchableOpacity>
@@ -186,72 +215,31 @@ export default function GroupTimelineTab({ route }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f5f5f5' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    
-    // --- CSS THANH LỌC ---
-    // --- CSS THANH LỌC (STYLE HIỆN ĐẠI - SEGMENTED CONTROL) ---
-    filterContainer: { 
-        flexDirection: 'row', 
-        backgroundColor: '#EEEEEE', // Nền xám nhạt ôm toàn bộ nút
-        borderRadius: 10,           // Bo góc nhẹ vuông vắn
-        padding: 4,                 // Khoảng không cho nút bên trong "thở"
-        marginHorizontal: 16, 
-        marginTop: 15, 
-        marginBottom: 5,
-    },
-    filterChip: { 
-        flex: 1,                    // Chia đều tăm tắp 4 nút
-        paddingVertical: 8, 
-        borderRadius: 8,            // Nút bên trong cũng vuông vắn
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    filterChipActive: { 
-        backgroundColor: '#FFFFFF', // Nút đang chọn sẽ nổi màu trắng
-        elevation: 2,               // Đổ bóng cho Android
-        shadowColor: '#000',        // Đổ bóng cho iOS
-        shadowOffset: { width: 0, height: 1 }, 
-        shadowOpacity: 0.1, 
-        shadowRadius: 2 
-    },
-    filterText: { 
-        fontSize: 13, 
-        color: '#888888',           // Chữ nút thường màu xám
-        fontWeight: '600' 
-    },
-    filterTextActive: { 
-        color: '#212121',           // Chữ nút chọn màu đen tuyền mạnh mẽ
-        fontWeight: 'bold' 
-    },
-
+    filterContainer: { flexDirection: 'row', backgroundColor: '#EEEEEE', borderRadius: 10, padding: 4, marginHorizontal: 16, marginTop: 15, marginBottom: 5 },
+    filterChip: { flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+    filterChipActive: { backgroundColor: '#FFFFFF', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+    filterText: { fontSize: 13, color: '#888888', fontWeight: '600' },
+    filterTextActive: { color: '#212121', fontWeight: 'bold' },
     listPadding: { paddingBottom: 100 },
     emptyText: { textAlign: 'center', marginTop: 50, color: '#999', fontStyle: 'italic' },
-    
-    // --- CSS CARD (Floating Card Giống SocialFeed) ---
     card: { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 15, marginBottom: 5, paddingVertical: 15, borderRadius: 16, borderWidth: 1, borderColor: '#F0F0F0', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, overflow: 'hidden' },
     cardHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, marginBottom: 5 },
     avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10, backgroundColor: '#EEE' },
     userInfo: { flex: 1 },
     userName: { fontSize: 15, fontWeight: 'bold', color: '#212121' },
     timeText: { fontSize: 12, color: '#999', marginTop: 2 },
-    
     badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
     badgeText: { fontSize: 11, fontWeight: 'bold' },
-    
     logImage: { width: '100%', height: 300, marginVertical: 10, backgroundColor: '#FAFAFA' },
     cardBody: { paddingHorizontal: 15, marginBottom: 10 },
     caption: { fontSize: 14, color: '#333', lineHeight: 20 },
     mood: { fontSize: 14, fontWeight: 'bold' },
-
-    // --- CSS TƯƠNG TÁC DƯỚI ĐÁY ---
     cardFooter: { paddingHorizontal: 15 },
     interactionBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' },
     actionBtnUI: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E0E0E0', borderRadius: 12, paddingVertical: 1, paddingHorizontal: 4, marginRight: 8 },
     actionEmoji: { fontSize: 16 },
-
     fab: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#4CAF50', flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 30, elevation: 5 },
     fabText: { color: '#FFF', fontWeight: 'bold' },
-
-    // --- CSS MODAL ---
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
     modalContent: { width: '100%', backgroundColor: '#FFF', borderRadius: 16, padding: 24, elevation: 5 },
     modalTitle: { fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#212121' },

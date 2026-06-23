@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator,TouchableOpacity,Modal,TextInput,Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, RefreshControl, ActivityIndicator, TouchableOpacity, Modal, TextInput, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios'; // hoặc fetch tùy dự án của ông
-import { Animated, Easing } from 'react-native'; // Nhớ import cái này
-import { BASE_URL } from '../config'; // Import BASE_URL từ config.js
+import axios from 'axios'; 
+import { Animated, Easing } from 'react-native'; 
+import { BASE_URL } from '../config'; 
+import { Ionicons } from '@expo/vector-icons'; // ⚡ ĐÃ THÊM IMPORT ICON CHO HEADER
 
 // ⚡ COMPONENT NÚT ĐẤM TAY (Có Animation)
 const FistBumpButton = ({ logId, initialHasBumped }) => {
@@ -14,14 +15,11 @@ const FistBumpButton = ({ logId, initialHasBumped }) => {
   const handleBump = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      // 1. Gọi API
       const res = await axios.post(`${BASE_URL}/social/bump`, 
-      //const res = await axios.post('http://172.31.2.204:3000/api/social/bump', 
         { logId }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 2. Nếu thành công -> Animation Phóng to thu nhỏ (Nảy)
       setHasBumped(res.data.action === 'added');
       Animated.sequence([
         Animated.timing(scaleValue, { toValue: 1.4, duration: 150, useNativeDriver: true }),
@@ -30,7 +28,6 @@ const FistBumpButton = ({ logId, initialHasBumped }) => {
 
     } catch (error) {
       console.log("Lỗi khi đấm tay:", error.response ? error.response.data : error.message);
-      // 3. Nếu lỗi 400 (Hết 3 lượt) -> Animation Lắc ngang từ chối
       if (error.response && error.response.status === 400) {
         Animated.sequence([
           Animated.timing(shakeValue, { toValue: 10, duration: 50, useNativeDriver: true }),
@@ -48,8 +45,8 @@ const FistBumpButton = ({ logId, initialHasBumped }) => {
         onPress={handleBump} 
         activeOpacity={0.7} 
         style={[
-          styles.actionBtnUI, // Style mặc định (trắng, viền xám)
-          hasBumped && styles.actionBtnUIActive // Style khi đã bấm (nền xanh, viền xanh)
+          styles.actionBtnUI, 
+          hasBumped && styles.actionBtnUIActive 
         ]}
       >
         <Text style={[styles.actionEmoji, { opacity: hasBumped ? 1 : 0.4 }]}>🤜</Text>
@@ -69,25 +66,15 @@ export default function SocialFeedScreen({navigation}) {
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Hàm gọi API lấy dữ liệu bảng tin
   const fetchFeed = async () => {
     try {
-        // 2. Lấy token đã lưu từ lúc Đăng nhập thành công
-        // (Ông check lại xem lúc Login ông lưu key tên là 'token' hay 'userToken' nhé)
         const token = await AsyncStorage.getItem('userToken');
-
-        // 3. Đính kèm Token vào Header theo chuẩn Bearer
         const response = await axios.get(`${BASE_URL}/social/getFeed`, {
-        //const response = await axios.get('http://172.31.2.204:3000/api/social/getFeed', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+            headers: { Authorization: `Bearer ${token}` }
         }); 
-
         setFeedData(response.data);
     } catch (error) {
         console.error("Lỗi tải bảng tin:", error);
-        // Đoạn này chính là cái Toast đang hiển thị dưới màn hình của ông đây
         alert("Lỗi tải bảng tin: " + error); 
     } finally {
         setIsLoading(false);
@@ -104,7 +91,6 @@ export default function SocialFeedScreen({navigation}) {
     fetchFeed();
   };
 
-  // HÀM GỌI API GỬI BÌNH LUẬN RIÊNG TƯ
   const handleSendComment = async () => {
     if (!commentText.trim()) {
       Alert.alert("Nhắc nhở", "Nhập vài chữ để cổ vũ đồng đội đã ông ơi!");
@@ -114,10 +100,7 @@ export default function SocialFeedScreen({navigation}) {
     setIsSubmitting(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      
-      // Gọi đúng API vừa dựng ở Day 40
       await axios.post(`${BASE_URL}/social/comment`, {
-      //await axios.post('http://172.31.2.204:3000/api/social/comment', {
         logId: activeLogId,
         message: commentText
       }, {
@@ -128,7 +111,6 @@ export default function SocialFeedScreen({navigation}) {
       setCommentText('');
       setIsCommentModalVisible(false);
     } catch (error) {
-      console.log("Lỗi gửi lời nhắn:", error.response ? error.response.data : error.message);
       const errorMsg = error.response?.data?.error || "Không thể kết nối đến máy chủ.";
       Alert.alert("Thất bại", errorMsg);
     } finally {
@@ -136,10 +118,8 @@ export default function SocialFeedScreen({navigation}) {
     }
   };
 
-  // Hàm render từng chiếc Card Nhật ký
   const renderFeedItem = ({ item }) => (
     <View style={styles.card}>
-      {/* 1. HEADER: Avatar + Tên + Thời gian */}
       <TouchableOpacity 
         style={styles.postHeader} 
         activeOpacity={0.7}
@@ -154,7 +134,6 @@ export default function SocialFeedScreen({navigation}) {
       </View>
       </TouchableOpacity>
 
-      {/* 2. BODY: Ảnh log + Caption */}
       {item.log_image && (
         <Image source={{ uri: item.log_image }} style={styles.logImage} resizeMode="cover" />
       )}
@@ -163,24 +142,15 @@ export default function SocialFeedScreen({navigation}) {
         {item.caption}
       </Text>
 
-      {/* 3. FOOTER: Bọc Tag mục tiêu và Nút Đấm tay nằm ngang hàng */}
-      {/* 3. FOOTER: Thẻ mục tiêu ở trên, Cụm tương tác dạt trái ở dưới */}
       <View style={styles.cardFooter}>
-        
-        {/* Hàng 1: Thẻ Mục tiêu */}
         <View style={[styles.goalTag, { backgroundColor: item.goal_color || '#e0e0e0' }]}>
           <Text style={styles.goalTagText}> {item.goal_title}</Text>
         </View>
         
-        {/* Hàng 2: Cụm nút tương tác kiểu Facebook (Dạt trái) */}
         <View style={styles.interactionBar}>
-          
-          {/* Nút đấm tay */}
           <FistBumpButton logId={item.log_id} initialHasBumped={item.has_bumped} />
-          
-          {/* Nút bình luận */}
           <TouchableOpacity 
-            style={styles.actionBtnUI} // Dùng chung style nền trắng viền xám
+            style={styles.actionBtnUI} 
             activeOpacity={0.6}
             onPress={() => {
               setActiveLogId(item.log_id);
@@ -189,7 +159,6 @@ export default function SocialFeedScreen({navigation}) {
           >
             <Text style={[styles.actionEmoji, { opacity: 0.6 }]}>💬</Text>
           </TouchableOpacity>
-
         </View>
       </View>
     </View>
@@ -205,22 +174,30 @@ export default function SocialFeedScreen({navigation}) {
 
   return (
     <View style={styles.container}>
+      {/* ⚡ HEADER CỐ ĐỊNH Ở TRÊN CÙNG */}
+      <View style={styles.feedHeader}>
+        <Text style={styles.headerTitle}>Bảng tin</Text>
+      </View>
+
       <FlatList
         data={feedData}
         keyExtractor={(item) => item.log_id.toString()}
         renderItem={renderFeedItem}
+        showsVerticalScrollIndicator={false} // Ẩn thanh cuộn cho đẹp
+        contentContainerStyle={{ paddingBottom: 30 }} // Cho người dùng lướt mượt hơn ở đáy
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>Bảng tin trống .</Text>
+            <Text style={styles.emptyText}>Bảng tin trống.</Text>
           </View>
         }
       />
+
       <Modal
         visible={isCommentModalVisible}
-        animationType="fade" // Hiệu ứng hiện mờ nhẹ nhàng thanh lịch
+        animationType="fade" 
         transparent={true}
         onRequestClose={() => setIsCommentModalVisible(false)}
       >
@@ -243,7 +220,7 @@ export default function SocialFeedScreen({navigation}) {
                 style={[styles.actionBtn, styles.cancelBtn]} 
                 onPress={() => {
                   setIsCommentModalVisible(false);
-                  setCommentText(''); // Xóa nội dung nháp khi hủy
+                  setCommentText(''); 
                 }}
               >
                 <Text style={styles.cancelBtnText}>Hủy</Text>
@@ -267,41 +244,55 @@ export default function SocialFeedScreen({navigation}) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' ,paddingTop: 40},
+  container: { flex: 1, backgroundColor: '#f5f5f5', paddingTop: 40 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-// THAY THẾ ĐOẠN CSS CŨ CỦA CARD BẰNG ĐOẠN NÀY
+
+  // ⚡ CSS CHO HEADER
+  feedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    paddingTop: 10,
+    backgroundColor: '#f5f5f5', // Tiệp màu nền để không bị đứt đoạn khối
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#2d5a27', // Xanh đậm chất Bambo
+    letterSpacing: 0.5,
+  },
+  bellBtn: {
+    padding: 8,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 20,
+  },
+
   card: { 
     backgroundColor: '#fff', 
-    marginHorizontal: 16, // ⚡ Tạo khoảng cách hở 2 bên mép màn hình
-    marginTop: 15,        // ⚡ Khoảng cách với thẻ phía trên
-    marginBottom: 5,
+    marginHorizontal: 16, 
+    marginTop: 5,         // Sửa nhẹ lại margin vì có header rồi
+    marginBottom: 15,
     paddingVertical: 15,  
-    borderRadius: 16,     // ⚡ Bo góc to và tròn trịa hơn giống giao diện nhóm
-    borderWidth: 1,       // ⚡ Thêm viền mờ
+    borderRadius: 16,     
+    borderWidth: 1,       
     borderColor: '#F0F0F0',
-    // Hiệu ứng đổ bóng nổi 3D (Z-index)
-    elevation: 3,         // Cho Android
-    shadowColor: '#000',  // Cho iOS
+    elevation: 3,         
+    shadowColor: '#000',  
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
-    overflow: 'hidden',   // Đảm bảo ảnh bên trong không bị tràn ra ngoài góc bo
+    overflow: 'hidden',   
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, marginBottom: 8 },
   avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
   creatorName: { fontWeight: 'bold', fontSize: 15 },
   timeText: { fontSize: 12, color: '#777' },
-  // ⚡ Đã sửa lỗi 'my' thành 'marginVertical'
   logImage: { width: '100%', height: 300, marginVertical: 12 }, 
   captionText: { paddingHorizontal: 12, fontSize: 14, marginVertical: 6 },
   moodText: { fontSize: 16 },
-  // ⚡ Thêm cardFooter để căn chỉnh Nút đấm tay
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 10 },
-  goalTag: { alignSelf: 'flex-start', marginLeft: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  goalTagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  emptyText: { color: '#666', textAlign: 'center', fontSize: 15 },
-  // Style căn chỉnh cụm nút đấm + bình luận nằm ngang hàng
-  // --- CSS MỚI CHO CARD FOOTER & NÚT TƯƠNG TÁC ---
+  
   cardFooter: {
     paddingHorizontal: 12,
     paddingBottom: 12,
@@ -311,37 +302,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    marginBottom: 12, // ⚡ Đẩy cách cụm nút bên dưới ra một chút
+    marginBottom: 12, 
   },
+  goalTagText: { color: '#fff', fontSize: 12, fontWeight: '600' },
   interactionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start', // ⚡ Ép toàn bộ dạt sang trái
+    justifyContent: 'flex-start', 
   },
-  
-  // Nút bấm mặc định (Chưa tương tác)
   actionBtnUI: {
-    backgroundColor: '#FFFFFF', // Nền trắng tiệp màu thẻ
+    backgroundColor: '#FFFFFF', 
     borderWidth: 1,
-    borderColor: '#E0E0E0',     // Viền xám nhạt
-    borderRadius: 12,           // Bo tròn 2 đầu dạng viên thuốc (Pill)
+    borderColor: '#E0E0E0',     
+    borderRadius: 12,           
     paddingVertical: 1,
-    paddingHorizontal: 4,      // Độ rộng của nút
-    marginRight: 8,            // Cách nhau ra một chút
+    paddingHorizontal: 4,      
+    marginRight: 8,            
   },
-  // Nút bấm khi ĐÃ tương tác (Dành riêng cho Đấm tay)
   actionBtnUIActive: {
-    backgroundColor: '#E8F5E9', // Nền xanh lá cực nhạt
-    borderColor: '#4CAF50',     // Viền xanh lá đậm lên
+    backgroundColor: '#E8F5E9', 
+    borderColor: '#4CAF50',     
   },
   actionEmoji: {
-    fontSize: 16, // ⚡ Thu nhỏ size lại theo ý ông (trước đó là 24 và 22)
+    fontSize: 16, 
   },
 
-  // Cấu trúc CSS cho khung Modal tinh tế
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)', // Làm tối mờ nền phía sau chuẩn điện ảnh
+    backgroundColor: 'rgba(0, 0, 0, 0.45)', 
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -355,7 +343,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
-    elevation: 6, // Hiệu ứng đổ bóng mượt trên Android
+    elevation: 6, 
   },
   modalTitle: {
     fontSize: 16,
@@ -371,7 +359,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 14,
     height: 90,
-    textAlignVertical: 'top', // Ép chữ bắt đầu từ đỉnh ô trên cả Android lẫn iOS
+    textAlignVertical: 'top', 
     fontSize: 14,
     color: '#333333',
     marginBottom: 18,
@@ -391,7 +379,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   submitBtn: {
-    backgroundColor: '#4CAF50', // Sắc xanh lá kỷ luật đại diện của tre Bambo
+    backgroundColor: '#4CAF50', 
     marginLeft: 8,
   },
   cancelBtnText: {

@@ -157,5 +157,26 @@ exports.getGoalById = async (req, res) => {
     res.status(500).json({ error: "Lỗi Server" });
   }
 };
+exports.deletePersonalGoal = async (req, res) => {
+    try {
+        const {goalId} = req.params;
+        const userId = req.user.id; // Lấy từ token JWT
+
+        // Xóa goal nếu đúng là của user này tạo
+        const [result] = await db.query(
+            'DELETE FROM goals WHERE goal_id = ? AND user_id = ?', 
+            [goalId, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(403).json({ message: "Không tìm thấy mục tiêu hoặc ông không có quyền xóa." });
+        }
+
+        res.json({ message: "Đã xóa mục tiêu cá nhân thành công." });
+    } catch (error) {
+        console.error("Lỗi xóa goal cá nhân:", error);
+        res.status(500).json({ message: "Lỗi hệ thống khi xóa mục tiêu." });
+    }
+};
 
 

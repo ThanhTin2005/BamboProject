@@ -236,3 +236,27 @@ exports.getGroupGallery = async (req, res) => {
         if (connection) connection.release();
     }
 };
+exports.deleteGroup = async (req, res) => {
+    const groupId = req.params.groupId;
+    const userId = req.user.id; 
+
+    try {
+        // 1. Kiểm tra xem người xóa có phải là Leader không
+        const [members] = await db.query(
+            'SELECT role FROM group_members WHERE group_id = ? AND user_id = ?', 
+            [groupId, userId]
+        );
+
+        if (members.length === 0 || members[0].role !== 'leader') {
+            return res.status(403).json({ message: "Chỉ Trưởng nhóm mới có quyền giải tán khế ước này." });
+        }
+
+        // 2. Chém nhóm (DB sẽ tự xóa các bảng con nếu có cài khóa ngoại ON DELETE CASCADE)
+        await db.query('DELETE FROM `groups` WHERE group_id = ?', [groupId]);
+
+        res.json({ message: "Đã giải tán nhóm thành công." });
+    } catch (error) {
+        console.error("Lỗi xóa nhóm:", error);
+        res.status(500).json({ message: "Lỗi hệ thống khi xóa nhóm." });
+    }
+};

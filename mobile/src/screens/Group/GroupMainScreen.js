@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import {Alert} from 'react-native';
 
 import GroupOverviewTab from './GroupOverviewTab';
 import GroupTimelineTab from './GroupTimelineTab';
@@ -10,7 +11,21 @@ const Tab = createMaterialTopTabNavigator();
 
 export default function GroupMainScreen({ route, navigation }) {
     const { group } = route.params; 
-    const groupId = group.id || group.group_id;
+    const groupId = group.group_id;
+    // ⚡ HÀM XỬ LÝ KHI BẤM NÚT 3 CHẤM
+    const handleGroupOptions = () => {
+        // Giả sử mã nhóm ông lấy từ API về nằm trong biến group.group_code
+        const groupCode = group?.group_id || "Đang tải mã...";
+
+        Alert.alert(
+            "Tùy chọn nhóm",
+            `Mã nhóm : ${groupCode}`,
+            [
+                { text: "Đóng", style: "cancel" },
+            ],
+            { cancelable: true }
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -21,6 +36,9 @@ export default function GroupMainScreen({ route, navigation }) {
                         <Ionicons name="arrow-back" size={30} color="#212121" />
                     </TouchableOpacity>
                     <Text style={styles.groupTitle} numberOfLines={1}>{group.title}</Text>
+                    <TouchableOpacity onPress={handleGroupOptions} style={{ padding: 5, marginRight: -5 }}>
+                        <Ionicons name="ellipsis-vertical" size={20} color="#212121" />
+                    </TouchableOpacity>
                     <View style={styles.spacer} />
                 </View>
             </View>

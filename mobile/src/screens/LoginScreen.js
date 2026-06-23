@@ -39,8 +39,8 @@ const handleLogin = async () => {
       await AsyncStorage.setItem('userToken', response.data.token);
       
       // 2. Lưu thông tin user nếu cần
-      await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
-
+      await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+      
       alert("Chào mừng " + response.data.user.username + " đến với Bambo!");
       // 3. Nhảy vào màn hình chính (Ngày 7 mình sẽ làm màn Home)
       // navigation.navigate('Home'); 

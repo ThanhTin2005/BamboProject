@@ -11,5 +11,6 @@ const uploadCloud = require('../config/cloudinaryConfig'); // Đẩy ảnh lên 
 router.post('/', authenticateToken, uploadCloud.single('image'), logController.createLog);
 // GET /api/logs/1 (Lấy tất cả log của goal có ID là 1)
 router.get('/:goal_id', authenticateToken, logController.getLogsByGoal);
+router.delete('/:logId', authenticateToken, logController.deleteLog);
 
 module.exports = router;
